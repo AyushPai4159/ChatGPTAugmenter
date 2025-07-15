@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const charCountElement = document.getElementById('charCount');
   const statusElement = document.getElementById('status');
   const refreshBtn = document.getElementById('refreshBtn');
+  const helloBtn = document.getElementById('helloBtn');
   const lastUpdatedElement = document.getElementById('lastUpdated');
   
   let isConnected = false;
@@ -79,6 +80,61 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Event listeners
   refreshBtn.addEventListener('click', refreshConnection);
+  
+  // Hello button event listener
+  helloBtn.addEventListener('click', function() {
+    // Create a new popup window with Hello World content
+    const popupWindow = window.open('', 'HelloWorldPopup', 'width=400,height=300,resizable=yes,scrollbars=yes');
+    
+    if (popupWindow) {
+      popupWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Hello World</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 20px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              text-align: center;
+            }
+            .content {
+              background: rgba(255, 255, 255, 0.1);
+              padding: 30px;
+              border-radius: 15px;
+              backdrop-filter: blur(10px);
+              border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            h1 {
+              margin: 0 0 10px 0;
+              font-size: 28px;
+              font-weight: 600;
+            }
+            p {
+              margin: 0;
+              font-size: 16px;
+              opacity: 0.8;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="content">
+            <h1>🌍 Hello World!</h1>
+            <p>Greetings from your ChatGPT Input Monitor extension!</p>
+          </div>
+        </body>
+        </html>
+      `);
+      popupWindow.document.close();
+    }
+  });
   
   // Listen for storage changes
   chrome.storage.onChanged.addListener(function(changes, namespace) {
