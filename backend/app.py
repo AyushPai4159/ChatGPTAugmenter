@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
 import json
@@ -6,6 +7,20 @@ import torch
 import os
 
 app = Flask(__name__)
+
+# Configure CORS to handle browser extension requests
+CORS(app, resources={
+    r"/search": {
+        "origins": ["chrome-extension://*", "moz-extension://*"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    },
+    r"/health": {
+        "origins": ["chrome-extension://*", "moz-extension://*"],
+        "methods": ["GET", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Global variables to store model and data
 model = None
@@ -84,9 +99,17 @@ def index():
     """Main page"""
     return render_template('index.html')
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['POST', 'OPTIONS'])
 def search():
     """API endpoint for searching documents"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        return response
+    
     try:
         data = request.get_json()
         query = data.get('query', '').strip()
@@ -101,9 +124,17 @@ def search():
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-@app.route('/health')
+@app.route('/health', methods=['GET', 'OPTIONS'])
 def health():
     """Health check endpoint"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        return response
+    
     is_loaded = all([model, data, doc_embeddings, keys])
     return jsonify({
         "status": "healthy" if is_loaded else "not_ready",
