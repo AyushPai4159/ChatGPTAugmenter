@@ -4,7 +4,6 @@ import numpy as np
 import json
 import torch
 import os
-import traceback
 
 app = Flask(__name__)
 
@@ -20,14 +19,18 @@ def load_model_and_data():
     
     try:
         # Load the sentence transformer model
-        model = SentenceTransformer('my_model_dir')
-
-        with open("data/output.json", "r") as file:
+        model_path = os.path.join(os.path.dirname(__file__), 'my_model_dir')
+        model = SentenceTransformer(model_path)
+        
+        # Load the JSON data
+        data_path = os.path.join(os.path.dirname(__file__), 'data', 'output.json')
+        with open(data_path, "r") as file:
             data = json.load(file)
         
         # Load precomputed embeddings
-        doc_embeddings = np.load("data/doc_embeddings.npy")
-        
+        embeddings_path = os.path.join(os.path.dirname(__file__), 'data', 'doc_embeddings.npy')
+        doc_embeddings_np = np.load(embeddings_path)
+        doc_embeddings = torch.tensor(doc_embeddings_np)
         
         # Get all keys
         keys = list(data.keys())
@@ -42,8 +45,8 @@ def load_model_and_data():
 
 def search_documents(query, top_k=3):
     """Search for similar documents based on the query"""
-    if not all ([model,data,doc_embeddings.all(),keys]):
-        return {"error" : "model or data missing or still loa"}
+    if not all([model, data, doc_embeddings.all(), keys]):
+        return {"error": "Model or data not loaded"}
     
     try:
         # Encode the query
@@ -86,19 +89,16 @@ def search():
     """API endpoint for searching documents"""
     try:
         data = request.get_json()
-        query = data.get('query')
-        #top_k = data.get('top_k', 3)
+        query = data.get('query', '').strip()
+        top_k = data.get('top_k', 3)
         
         if not query:
             return jsonify({"error": "Query cannot be empty"}), 400
         
-        results = search_documents(query)
+        results = search_documents(query, top_k)
         return jsonify(results)
         
-        
-        
     except Exception as e:
-        print(traceback.format_exc())
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route('/health')
