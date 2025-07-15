@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const charCountElement = document.getElementById('charCount');
   const statusElement = document.getElementById('status');
   const refreshBtn = document.getElementById('refreshBtn');
-  const helloBtn = document.getElementById('helloBtn');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchResults = document.getElementById('searchResults');
   const lastUpdatedElement = document.getElementById('lastUpdated');
   
   let isConnected = false;
@@ -46,7 +47,95 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Function to refresh connection
+  // Function to search documents using Flask API
+  async function searchDocuments() {
+    // Get current input text
+    const currentText = inputTextElement.textContent || inputTextElement.innerText || '';
+    
+    if (!currentText || currentText.trim() === '' || currentText.includes('No input detected')) {
+      searchResults.innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 10px;">❌ No input text to search. Please type something in ChatGPT first.</div>';
+      searchResults.style.display = 'block';
+      return;
+    }
+    
+    const query = currentText.trim();
+    
+    // Update button state
+    searchBtn.disabled = true;
+    searchBtn.textContent = '🔄 Searching...';
+    
+    // Show loading state
+    searchResults.innerHTML = '<div style="text-align: center; padding: 10px;">🔍 Searching documents...</div>';
+    searchResults.style.display = 'block';
+    
+    try {
+      const response = await fetch('http://localhost:5000/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: query,
+          top_k: 3
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      displaySearchResults(data);
+      
+    } catch (error) {
+      console.error('Search error:', error);
+      let errorMessage = '❌ Search failed. ';
+      
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        errorMessage += 'Make sure your Flask server is running on localhost:5000';
+      } else {
+        errorMessage += error.message;
+      }
+      
+      searchResults.innerHTML = `<div style="color: #ff6b6b; text-align: center; padding: 10px;">${errorMessage}</div>`;
+    } finally {
+      // Reset button state
+      searchBtn.disabled = false;
+      searchBtn.textContent = '🔍 Search Documents';
+    }
+  }
+  
+  // Function to display search results
+  function displaySearchResults(data) {
+    if (!data.results || data.results.length === 0) {
+      searchResults.innerHTML = '<div style="color: #fbbf24; text-align: center; padding: 10px;">🤷‍♂️ No results found</div>';
+      return;
+    }
+    
+    let resultsHtml = `<div style="font-size: 12px; margin-bottom: 10px; opacity: 0.8;">Found ${data.results.length} results for: "${data.query}"</div>`;
+    
+    data.results.forEach((result, index) => {
+      const similarity = Math.round(result.similarity * 100);
+      const content = result.content.length > 100 ? result.content.substring(0, 100) + '...' : result.content;
+      
+      resultsHtml += `
+        <div class="search-result-item">
+          <div class="search-result-header">
+            <span class="search-result-key">#${index + 1} ${result.key}</span>
+            <span class="search-result-similarity">${similarity}%</span>
+          </div>
+          <div class="search-result-content">${content}</div>
+        </div>
+      `;
+    });
+    
+    searchResults.innerHTML = resultsHtml;
+  }
   function refreshConnection() {
     refreshBtn.textContent = '🔄 Refreshing...';
     refreshBtn.disabled = true;
@@ -81,60 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Event listeners
   refreshBtn.addEventListener('click', refreshConnection);
   
-  // Hello button event listener
-  helloBtn.addEventListener('click', function() {
-    // Create a new popup window with Hello World content
-    const popupWindow = window.open('', 'HelloWorldPopup', 'width=400,height=300,resizable=yes,scrollbars=yes');
-    
-    if (popupWindow) {
-      popupWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Hello World</title>
-          <style>
-            body {
-              margin: 0;
-              padding: 20px;
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              text-align: center;
-            }
-            .content {
-              background: rgba(255, 255, 255, 0.1);
-              padding: 30px;
-              border-radius: 15px;
-              backdrop-filter: blur(10px);
-              border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-            h1 {
-              margin: 0 0 10px 0;
-              font-size: 28px;
-              font-weight: 600;
-            }
-            p {
-              margin: 0;
-              font-size: 16px;
-              opacity: 0.8;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="content">
-            <h1>🌍 Hello World!</h1>
-            <p>Greetings from your ChatGPT Input Monitor extension!</p>
-          </div>
-        </body>
-        </html>
-      `);
-      popupWindow.document.close();
-    }
-  });
+  // Search button event listener
+  searchBtn.addEventListener('click', searchDocuments);
   
   // Listen for storage changes
   chrome.storage.onChanged.addListener(function(changes, namespace) {
