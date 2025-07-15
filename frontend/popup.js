@@ -112,6 +112,11 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Function to display search results
   function displaySearchResults(data) {
+    
+    const popupWindow = window.open('', 'Results PopUp', 'width=400,height=300,resizable=yes,scrollbars=yes');
+    
+    
+
     if (!data.results || data.results.length === 0) {
       searchResults.innerHTML = '<div style="color: #fbbf24; text-align: center; padding: 10px;">🤷‍♂️ No results found</div>';
       return;
@@ -121,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     data.results.forEach((result, index) => {
       const similarity = Math.round(result.similarity * 100);
-      const content = result.content.length > 100 ? result.content.substring(0, 100) + '...' : result.content;
+      const content = result.content;
       
       resultsHtml += `
         <div class="search-result-item">
@@ -131,10 +136,13 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div class="search-result-content">${content}</div>
         </div>
+        <br/>
       `;
     });
     
-    searchResults.innerHTML = resultsHtml;
+    if(popupWindow){
+      popupWindow.document.write(resultsHtml)
+    }
   }
   function refreshConnection() {
     refreshBtn.textContent = '🔄 Refreshing...';
