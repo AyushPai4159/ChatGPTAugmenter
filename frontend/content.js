@@ -19,6 +19,8 @@
       'textarea'
     ];
     
+
+    //look for id #prompt-textarea
     for (const selector of selectors) {
       const element = document.querySelector(selector);
       if (element && (element.tagName === 'TEXTAREA' || element.contentEditable === 'true')) {
@@ -26,22 +28,22 @@
       }
     }
     
-    // Fallback: look for any textarea or contenteditable div that might be the input
-    const textareas = document.querySelectorAll('textarea');
-    for (const textarea of textareas) {
-      const rect = textarea.getBoundingClientRect();
-      if (rect.width > 100 && rect.height > 30) { // Reasonable size for input
-        return textarea;
-      }
-    }
+    // // Fallback: look for any textarea or contenteditable div that might be the input
+    // const textareas = document.querySelectorAll('textarea');
+    // for (const textarea of textareas) {
+    //   const rect = textarea.getBoundingClientRect();
+    //   if (rect.width > 100 && rect.height > 30) { // Reasonable size for input
+    //     return textarea;
+    //   }
+    // }
     
-    const editableDivs = document.querySelectorAll('div[contenteditable="true"]');
-    for (const div of editableDivs) {
-      const rect = div.getBoundingClientRect();
-      if (rect.width > 100 && rect.height > 30) {
-        return div;
-      }
-    }
+    // const editableDivs = document.querySelectorAll('div[contenteditable="true"]');
+    // for (const div of editableDivs) {
+    //   const rect = div.getBoundingClientRect();
+    //   if (rect.width > 100 && rect.height > 30) {
+    //     return div;
+    //   }
+    // }
     
     return null;
   }
