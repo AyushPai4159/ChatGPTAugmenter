@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         body: JSON.stringify({
           query: query,
-          top_k: 3
+          top_k: 6
         })
       });
       
