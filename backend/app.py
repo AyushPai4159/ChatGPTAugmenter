@@ -9,7 +9,11 @@ import os
 app = Flask(__name__)
 
 # Configure CORS to handle browser extension requests
-CORS(app, resources={
+
+
+
+def integrateCORS():
+    CORS(app, resources={
     r"/search": {
         "origins": ["chrome-extension://*", "moz-extension://*"],
         "methods": ["GET", "POST", "OPTIONS"],
@@ -20,7 +24,12 @@ CORS(app, resources={
         "methods": ["GET", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
-})
+    })
+    print("CORS is enabled")
+
+
+integrateCORS()
+
 
 # Global variables to store model and data
 model = None
