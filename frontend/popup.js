@@ -71,19 +71,46 @@ document.addEventListener('DOMContentLoaded', function() {
     
   }
   async function integrateBackend(query) {
-    data = {
-      "query": "example text",
-      "results": [
-        {
-          "content" : "Hello, I am the isolated frontend ver0.3!",
-          "key": "Produce some random text",
-          "similarity": 1.0
-        }
+     try {
+      const response = await fetch("http://127.0.0.1:5000/search", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: query,
+          top_k: 6
+        })
+      });
       
-      ],
-      "total_results": 1
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      displaySearchResults(data);
+      
+    } catch (error) {
+      console.error('Search error:', error);
+      let errorMessage = '❌ Search failed. ';
+      
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        errorMessage += 'Make sure your Flask server is running on localhost:5000';
+      } else {
+        errorMessage += error.message;
+      }
+      
+      searchResults.innerHTML = `<div style="color: #ff6b6b; text-align: center; padding: 10px;">${errorMessage}</div>`;
+    } finally {
+      // Reset button state
+      searchBtn.disabled = false;
+      searchBtn.textContent = '🔍 Search Documents';
     }
-    displaySearchResults(data)
 
   }
   
