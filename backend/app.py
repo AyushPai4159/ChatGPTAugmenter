@@ -28,6 +28,7 @@ def integrateCORS():
     print("CORS is enabled")
 
 
+integrateCORS()
 
 
 # Global variables to store model and data
