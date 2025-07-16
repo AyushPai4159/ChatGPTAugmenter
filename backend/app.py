@@ -58,7 +58,7 @@ def load_model_and_data():
         print(f"❌ Error loading model and data: {e}")
         raise e
 
-def search_documents(query, top_k=3):
+def search_documents(query, top_k=6):
     """Search for similar documents based on the query"""
     if not all([model, data, doc_embeddings.all(), keys]):
         return {"error": "Model or data not loaded"}
@@ -113,7 +113,7 @@ def search():
     try:
         data = request.get_json()
         query = data.get('query', '').strip()
-        top_k = data.get('top_k', 3)
+        top_k = data.get('top_k', 6)
         
         if not query:
             return jsonify({"error": "Query cannot be empty"}), 400
