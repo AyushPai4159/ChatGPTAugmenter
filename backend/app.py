@@ -15,12 +15,12 @@ app = Flask(__name__)
 def integrateCORS():
     CORS(app, resources={
     r"/search": {
-        "origins": ["chrome-extension://*", "moz-extension://*"],
+        "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     },
     r"/health": {
-        "origins": ["chrome-extension://*", "moz-extension://*"],
+        "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
         "methods": ["GET", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
