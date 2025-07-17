@@ -1,0 +1,143 @@
+# Multi-stage Docker build for ChatGPT Augmenter
+# Stage 1: Build React app
+FROM node:18-alpine as react-builder
+
+# Set working directory for React app
+WORKDIR /app/react-app
+
+# Copy package files
+COPY react-app/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy React app source
+COPY react-app/ ./
+
+# Build React app
+RUN npm run build
+
+# Stage 2: Python backend with served React app
+FROM node:18-alpine as react-builder
+
+# Set working directory for React app
+WORKDIR /app/react-app
+
+# Copy package files
+COPY react-app/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy React app source
+COPY react-app/ ./
+
+# Build React app
+RUN npm run build
+
+# Stage 2: Python backend with served React app
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python requirements and install dependencies
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend files
+COPY backend/ ./backend/
+
+# Copy built React app from previous stage
+COPY --from=react-builder /app/react-app/build ./frontend/build
+
+# Copy startup scripts from root directory
+COPY startup.sh run.sh ./
+
+# Make scripts executable (including backend bash scripts)
+RUN chmod +x startup.sh run.sh && \
+    chmod +x backend/setup.sh && \
+    chmod +x backend/run_flask.sh && \
+    chmod +x backend/bashFiles/delete.sh && \
+    chmod +x backend/bashFiles/load.sh
+
+# Create a Docker startup script that uses your existing logic but adapted for Docker
+RUN echo '#!/bin/bash\n\
+\n\
+echo "🐳 Starting ChatGPT Augmenter in Docker..."\n\
+\n\
+# Check if model directory exists (indicates if setup was run before)\n\
+if [ ! -d "/app/backend/my_model_dir" ]; then\n\
+    echo "🔧 Model directory not found. Running initial setup..."\n\
+    \n\
+    # Run setup without virtual environment (since we'\''re in Docker)\n\
+    cd /app/backend\n\
+    \n\
+    # Run the setup scripts\n\
+    echo "� Running setup scripts..."\n\
+    cd bashFiles\n\
+    sh delete.sh\n\
+    sh load.sh\n\
+    cd ..\n\
+    \n\
+    echo "✅ Setup completed!"\n\
+else\n\
+    echo "� Model directory found. Skipping setup..."\n\
+fi\n\
+\n\
+# Start Flask backend\n\
+echo "🌐 Starting Flask backend on port 5001..."\n\
+echo "Flask will serve both API and React frontend"\n\
+echo "⏳ Giving Flask a moment to fully initialize..."\n\
+cd /app/backend && python app.py &\n\
+BACKEND_PID=$!\n\
+\n\
+# Wait a bit for Flask to start\n\
+sleep 5\n\
+\n\
+# Check if Flask started successfully\n\
+if ps -p $BACKEND_PID > /dev/null; then\n\
+    echo "✅ Flask process is running (PID: $BACKEND_PID)"\n\
+else\n\
+    echo "❌ Flask failed to start!"\n\
+    exit 1\n\
+fi\n\
+\n\
+# Cleanup function\n\
+cleanup() {\n\
+    echo "🛑 Shutting down services..."\n\
+    kill $BACKEND_PID 2>/dev/null\n\
+    exit 0\n\
+}\n\
+\n\
+# Set up signal handlers\n\
+trap cleanup SIGTERM SIGINT\n\
+\n\
+echo "✅ Services started successfully!"\n\
+echo "   - Application: http://localhost:5001"\n\
+echo "   - API: http://localhost:5001/search"\n\
+echo "   - Health: http://localhost:5001/health"\n\
+\n\
+# Wait for process\n\
+wait' > /app/docker_start.sh && chmod +x /app/docker_start.sh
+
+# Expose ports
+EXPOSE 5001
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
+    CMD curl -f http://localhost:5001/health || exit 1
+
+# Set environment variables
+ENV FLASK_APP=backend/app.py
+ENV FLASK_ENV=production
+ENV PYTHONPATH=/app
+
+# Start the application
+CMD ["/app/docker_start.sh"]

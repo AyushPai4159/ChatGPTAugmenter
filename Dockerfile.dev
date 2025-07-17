@@ -1,0 +1,44 @@
+# Development Docker build for ChatGPT Augmenter with hot reload
+FROM node:18-alpine
+
+# Install Python and pip
+RUN apk add --no-cache python3 py3-pip gcc musl-dev python3-dev
+
+# Set working directory
+WORKDIR /app
+
+# Copy and install Python requirements
+COPY backend/requirements.txt ./
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy package files for React app
+COPY react-app/package*.json ./react-app/
+
+# Install React dependencies
+WORKDIR /app/react-app
+RUN npm install
+
+# Copy all source files
+WORKDIR /app
+COPY . .
+
+# Create a development startup script
+RUN echo '#!/bin/sh\n\
+# Start Flask backend in development mode\n\
+cd /app/backend && python3 app.py &\n\
+\n\
+# Start React development server\n\
+cd /app/react-app && npm start &\n\
+\n\
+# Keep container running\n\
+wait' > /app/start-dev.sh && chmod +x /app/start-dev.sh
+
+# Expose ports
+EXPOSE 3000 5000
+
+# Set environment variables
+ENV FLASK_ENV=development
+ENV PYTHONPATH=/app
+
+# Start the application in development mode
+CMD ["/app/start-dev.sh"]

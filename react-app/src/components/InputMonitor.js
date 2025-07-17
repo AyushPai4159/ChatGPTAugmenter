@@ -56,7 +56,7 @@ const InputMonitor = ({
       let errorMessage = 'Search failed. ';
       
       if (error.message.includes('Network Error') || error.code === 'ERR_NETWORK') {
-        errorMessage += 'Make sure your Flask server is running on localhost:5000';
+        errorMessage += 'Make sure your Flask server is running on localhost:5001';
       } else {
         errorMessage += error.message;
       }

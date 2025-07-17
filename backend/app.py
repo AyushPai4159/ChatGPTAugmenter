@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
@@ -6,26 +6,54 @@ import json
 import torch
 import os
 
-app = Flask(__name__)
+# Determine if we're in production (inside Docker)
+PRODUCTION = os.getenv('FLASK_ENV') == 'production'
+
+# Set static folder based on environment
+if PRODUCTION:
+    # In production, serve React build files
+    static_folder = '/app/frontend/build/static'
+    template_folder = '/app/frontend/build'
+    app = Flask(__name__, static_folder=static_folder, template_folder=template_folder)
+else:
+    # In development, use default Flask setup
+    app = Flask(__name__)
 
 # Configure CORS to handle browser extension requests
 
 
 
 def integrateCORS():
-    CORS(app, resources={
-    r"/search": {
-        "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    },
-    r"/health": {
-        "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
-        "methods": ["GET", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-    })
-    print("CORS is enabled")
+    """Configure CORS based on environment"""
+    if PRODUCTION:
+        # In production, allow requests from the same origin
+        CORS(app, resources={
+            r"/search": {
+                "origins": ["*"],  # Allow all origins in production
+                "methods": ["GET", "POST", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"]
+            },
+            r"/health": {
+                "origins": ["*"],
+                "methods": ["GET", "OPTIONS"],
+                "allow_headers": ["Content-Type"]
+            }
+        })
+    else:
+        # In development, allow localhost and extensions
+        CORS(app, resources={
+            r"/search": {
+                "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000", "http://localhost:3001"],
+                "methods": ["GET", "POST", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"]
+            },
+            r"/health": {
+                "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000", "http://localhost:3001"],
+                "methods": ["GET", "OPTIONS"],
+                "allow_headers": ["Content-Type"]
+            }
+        })
+    print(f"CORS configured for {'production' if PRODUCTION else 'development'} environment")
 
 
 integrateCORS()
@@ -105,8 +133,25 @@ def search_documents(query, top_k=6):
 
 @app.route('/')
 def index():
-    """Main page"""
-    return render_template('index.html')
+    """Main page - serve React app in production, Flask template in development"""
+    if PRODUCTION:
+        return send_file('/app/frontend/build/index.html')
+    else:
+        return render_template('index.html')
+
+@app.route('/<path:path>')
+def serve_react_app(path):
+    """Serve React app static files in production"""
+    if PRODUCTION:
+        # Try to serve the requested file
+        try:
+            return send_from_directory('/app/frontend/build', path)
+        except:
+            # If file not found, serve index.html (for React Router)
+            return send_file('/app/frontend/build/index.html')
+    else:
+        # In development, return 404 for unknown routes
+        return "Not found", 404
 
 @app.route('/search', methods=['POST', 'OPTIONS'])
 def search():
@@ -144,7 +189,7 @@ def health():
         response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
         return response
     
-    is_loaded = all([model, data, doc_embeddings, keys])
+    is_loaded = all([model, data, doc_embeddings.all(), keys])
     return jsonify({
         "status": "healthy" if is_loaded else "not_ready",
         "model_loaded": model is not None,
@@ -159,6 +204,9 @@ if __name__ == '__main__':
     # Load model and data
     load_model_and_data()
     
+    # Determine port based on environment
+    port = 5001 if PRODUCTION else 5000
+    
     # Run the Flask app
-    print("🌐 Starting Flask server on http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print(f"🌐 Starting Flask server on http://localhost:{port}")
+    app.run(debug=not PRODUCTION, host='0.0.0.0', port=port)
