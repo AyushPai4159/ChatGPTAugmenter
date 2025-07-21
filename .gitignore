@@ -1,4 +1,2 @@
 /backend/venv/
 /backend/my_model_dir/
-/backend/data/*
-!/backend/data/.gitkeep
