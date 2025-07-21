@@ -22,7 +22,7 @@ A browser extension that enhances ChatGPT by providing semantic search capabilit
 
 1. **Download the Application**
    ```bash
-   git clone https://github.com/AyushPai4159/ChatGPTAugmenter/tree/ver0.4
+   git clone https://github.com/AyushPai4159/ChatGPTAugmenter/tree/main
    cd ChatGPTAugmenter
    ```
 
