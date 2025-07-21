@@ -1,5 +1,4 @@
 /backend/venv/
 /backend/my_model_dir/
-/backend/data/conversations.json
-/backend/data/output.json
-/backend/data/doc_embeddings.npy
+/backend/data/*
+!/backend/data/.gitkeep
