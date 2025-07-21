@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const query = currentText.trim();
-    
     // Update button state
     searchBtn.disabled = true;
     searchBtn.textContent = '🔄 Searching...';
@@ -67,8 +66,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show loading state
     searchResults.innerHTML = '<div style="text-align: center; padding: 10px;">🔍 Searching documents...</div>';
     searchResults.style.display = 'block';
+    integrateBackend(query)
     
-    try {
+    
+  }
+  async function integrateBackend(query) {
+     try {
       const response = await fetch("http://127.0.0.1:5000/search", {
         method: 'POST',
         headers: {
@@ -108,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
       searchBtn.disabled = false;
       searchBtn.textContent = '🔍 Search Documents';
     }
+
   }
   
   // Function to display search results
@@ -461,3 +465,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+
+
