@@ -1,1 +1,7 @@
-/testFolder/my_model_dir/
+/backend/venv/
+/backend/my_model_dir/
+/backend/data/conversations.json
+/backend/data/doc_embeddings.npy
+/backend/data/output.json
+/testFolder/
+/react-app/node_modules/
