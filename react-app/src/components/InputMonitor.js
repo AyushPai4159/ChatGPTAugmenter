@@ -32,14 +32,9 @@ const InputMonitor = ({
     }
   };
 
-  const handleSearch = async () => {
-    if (!currentInputText.trim()) {
-      alert('Please enter some text to search');
-      return;
-    }
 
-    setIsLoading(true);
-    
+
+  const integrateBackend = async () => {
     try {
       const response = await axios.post('/search', {
         query: currentInputText.trim(),
@@ -65,6 +60,18 @@ const InputMonitor = ({
     } finally {
       setIsLoading(false);
     }
+  }
+
+  const handleSearch = async () => {
+    if (!currentInputText.trim()) {
+      alert('Please enter some text to search');
+      return;
+    }
+
+    setIsLoading(true);
+    integrateBackend()
+    
+    
   };
 
   const formatLastUpdated = (timestamp) => {
