@@ -1,19 +1,19 @@
 # ChatGPT Augmenter
 
-A browser extension that enhances ChatGPT by providing semantic search capabilities over your conversation history using machine learning embeddings.
+A React web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
 ## Features
 
 - **Semantic Search**: Search through your ChatGPT conversations using advanced sentence transformers
-- **Real-time Integration**: Seamlessly integrates with ChatGPT interface
-- **Smart Recommendations**: Get relevant conversation snippets based on your current prompt
-- **Cross-browser Support**: Works with Chrome and Firefox
+- **Modern Web Interface**: Clean, responsive React-based user interface
+- **Smart Recommendations**: Get relevant conversation snippets based on your search queries
+- **Real-time Results**: Fast semantic search with similarity scoring
 
 ## System Requirements
 
 - Python 3.7 or higher
-- Node.js and npm (if using React version)
-- Chrome or Firefox browser with developer extensions enabled
+- Node.js and npm (required for React app)
+- Modern web browser (Chrome, Firefox, Safari, Edge)
 - ~80MB of SSD space for the Sentence Transformer model
 
 ## Installation & Setup
@@ -41,39 +41,51 @@ A browser extension that enhances ChatGPT by providing semantic search capabilit
    - Process your conversations and create embeddings
    - Start the Flask backend server
 
-4. **Install Browser Extension**
-   - Open Chrome or Firefox
-   - Go to Extensions/Add-ons page
-   - Enable "Developer mode" 
-   - Click "Load unpacked extension" (Chrome) or "Load Temporary Add-on" (Firefox)
-   - Select the `/frontend/` directory from this project
+4. **Setup React Web Application**
+   ```bash
+   cd react-app
+   npm install
+   npm start
+   ```
+   This will:
+   - Install all Node.js dependencies
+   - Start the React development server
+   - Open the application in your browser at `http://localhost:3000`
 
 ### Daily Usage
 
 For subsequent runs after the initial setup:
 
-```bash
-./run.sh
-```
+1. **Start Backend Server**
+   ```bash
+   ./run.sh
+   ```
 
-This will start the backend server without re-downloading the model or re-processing data.
+2. **Start React Application**
+   ```bash
+   cd react-app
+   npm start
+   ```
+
+The backend server will run on `http://localhost:5000` and the React app on `http://localhost:3000`.
 
 ## How to Use
 
 1. **Start the Application**
    - Run `./run.sh` to start the backend server
-   - The extension should be loaded in your browser
+   - Navigate to the `react-app` directory and run `npm start`
+   - The web app will open at `http://localhost:3000`
 
-2. **Use with ChatGPT**
-   - Go to ChatGPT (chat.openai.com)
-   - Start typing a prompt in the input field
-   - The extension will automatically extract and analyze your input
-
-3. **Search Your Conversations**
-   - Click on the ChatGPT Augmenter extension icon in your browser
+2. **Search Your Conversations**
+   - Enter your search query in the input field
    - Click the "Search Documents" button
-   - View relevant conversation snippets that match your current context
-   - Use these results to inform or enhance your ChatGPT prompts
+   - View relevant conversation snippets with similarity scores
+   - Browse through the results to find relevant information from your ChatGPT history
+
+3. **Monitor Input (Simulation Feature)**
+   - The app includes a ChatGPT input simulator
+   - Type in the text area to simulate ChatGPT input monitoring
+   - Use the "Clear" and "Search" buttons to interact with the interface
 
 ## Project Structure
 
@@ -88,36 +100,42 @@ ChatGPTAugmenter/
 │   ├── data/          # Your conversation data
 │   │   └── conversations.json  # (You need to add this)
 │   └── pythonFiles/   # Data processing scripts
-├── frontend/          # Browser extension
-│   ├── manifest.json  # Extension configuration
-│   ├── popup.html     # Extension popup interface
-│   ├── popup.js       # Extension popup logic
-│   └── content.js     # ChatGPT page integration
-└── react-app/         # React web version (optional)
+├── react-app/         # React web application (main app)
+│   ├── package.json   # Node.js dependencies
+│   ├── public/        # Static assets
+│   ├── src/           # React source code
+│   │   ├── App.js     # Main React component
+│   │   ├── components/ # UI components
+│   │   └── ...        # Other React files
+│   └── README.md      # React-specific documentation
+└── frontend/          # Legacy browser extension (deprecated)
 ```
 
 ## Troubleshooting
 
-- **Extension not loading**: Make sure developer mode is enabled in your browser
+- **React app not starting**: Make sure Node.js and npm are installed, and run `npm install` in the `react-app` directory
 - **No search results**: Ensure `conversations.json` is in the correct location and `startup.sh` ran successfully
 - **Server errors**: Check that the Flask server is running on `http://localhost:5000`
+- **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`
 - **Model download issues**: The setup script will download ~80MB for the Sentence Transformer model
 
 ## Technical Details
 
 - **Backend**: Flask with sentence-transformers for semantic search
-- **Frontend**: Vanilla JavaScript browser extension with React version available
+- **Frontend**: React web application with modern UI components
 - **ML Model**: Uses sentence-transformers for creating and comparing text embeddings
 - **Storage**: Processes conversations into vector embeddings for fast similarity search
+- **API**: RESTful API with CORS support for web app integration
 
 ## Development
 
 To modify or extend the application:
 
-1. Backend changes: Edit files in `/backend/` 
-2. Extension changes: Edit files in `/frontend/`
-3. React version: Use the `/react-app/` directory
+1. **Backend changes**: Edit files in `/backend/` 
+2. **React app changes**: Edit files in `/react-app/src/`
+3. **Adding new components**: Create new files in `/react-app/src/components/`
+4. **Styling**: Modify CSS files in `/react-app/src/`
 
 ## Support
 
-Make sure to run `startup.sh` for first-time setup and `run.sh` for subsequent uses. The Sentence Transformer model requires an internet connection for the initial download.
+Make sure to run `startup.sh` for first-time setup and `run.sh` for subsequent backend starts. Don't forget to run `npm start` in the `react-app` directory to launch the web application. The Sentence Transformer model requires an internet connection for the initial download.
