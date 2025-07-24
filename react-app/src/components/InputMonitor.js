@@ -72,20 +72,31 @@ const InputMonitor = ({
 
   //integration function with backend to send query
   const integrateBackend = async () => {
-    const data = {
-      "query": "example text",
-      "results": [
-        {
-          "content" : "Hello, I am the isolated reactFrontend ver0.5!",
-          "key": "Produce some random text",
-          "similarity": 1.0
-        }
+    try {
+      const response = await axios.post('/search', {
+        query: currentInputText.trim(),
+        top_k: 6
+      });
+
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      onSearch(response.data);
+    } catch (error) {
+      console.error('Search error:', error);
+      let errorMessage = 'Search failed. ';
       
-      ],
-      "total_results": 1
+      if (error.message.includes('Network Error') || error.code === 'ERR_NETWORK') {
+        errorMessage += 'Make sure your Flask server is running on localhost:5000';
+      } else {
+        errorMessage += error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-    onSearch(data);
-    setIsLoading(false);  
   }
 
 
