@@ -10,12 +10,26 @@ from routes.health import HealthService, HealthServiceException
 
 app = Flask(__name__)
 
+"""-------------------------------------------------------------------------------------------------------"""
+
+"""FRONTEND INTEGRATION FUNCTIONS"""
+
+
+
 # Configure CORS to handle browser extension requests
 def integrateCORS():
     print("Isolated component so CORS disabled")
 
 
 integrateCORS()
+
+
+
+
+"""-------------------------------------------------------------------------------------------------------"""
+
+"""GLOBAL VARIABLES"""
+
 
 # Global variables to store model and data
 model = None
@@ -26,19 +40,6 @@ keys = None
 
 
 
-
-
-
-
-
-
-
-
-
-@app.route('/')
-def index():
-    """Main page"""
-    return render_template('index.html')
 
 
 
@@ -119,7 +120,14 @@ def health():
 
 """--------------------------------------------------------------------------------------------------------------------------------------------------------"""
 
-"""GENERAL INIT SERVICES"""
+"""GENERAL INIT SERVICES and OTHER ROUTES"""
+
+
+
+@app.route('/')
+def index():
+    """Main page"""
+    return render_template('index.html')
 
 
 
