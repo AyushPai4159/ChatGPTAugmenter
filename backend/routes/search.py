@@ -16,7 +16,7 @@ class SearchService:
     def search_documents_and_extract_results(query, top_k, model, data, doc_embeddings, keys):
         """Search for similar documents based on the query"""
         if not all([model, data, doc_embeddings.all(), keys]):
-            raise SearchServiceException("Model or Data not loaded")
+            raise SearchServiceException("model or data not loaded")
         
         try:  
             cos_package = SearchService.query_doc_similarity_scores_UNCHANGED(query, top_k, model, doc_embeddings, keys) #custom function
@@ -33,6 +33,8 @@ class SearchService:
     
     @staticmethod
     def query_doc_similarity_scores_UNCHANGED(query, top_k, model, doc_embeddings, keys):
+
+        try:
             # Encode the query
             query_embedding = model.encode(query, convert_to_tensor=True)
             # Calculate cosine similarities
@@ -42,23 +44,29 @@ class SearchService:
             # Flatten scores for easier access
             cos_scores = cos_scores.flatten()
             return {'cos_scores' : cos_scores, 'top_indices' : top_indices}
+        except Exception:
+            raise SearchServiceException('error in creating cos_scores')
             
 
     @staticmethod
-    def create_results_from_scores_UNCHANGED(cos_scores, top_indices, data, keys):       
-                # Prepare results
-                results = []
-                for idx in top_indices[0]:
-                    key = keys[idx]
-                    similarity = float(cos_scores[idx])
-                    content = data[key]
-                    
-                    results.append({
-                        "key": key,
-                        "similarity": similarity,
-                        "content": content
-                    })
-                return results
+    def create_results_from_scores_UNCHANGED(cos_scores, top_indices, data, keys):
+
+        try:
+            # Prepare results
+            results = []
+            for idx in top_indices[0]:
+                key = keys[idx]
+                similarity = float(cos_scores[idx])
+                content = data[key]
+                
+                results.append({
+                    "key": key,
+                    "similarity": similarity,
+                    "content": content
+                })
+            return results
+        except Exception:
+            raise SearchServiceException('error in preparing results array')
 
     
    

@@ -6,6 +6,7 @@ import json
 import torch
 import os
 from routes.search import SearchService, SearchServiceException
+from routes.health import HealthService, HealthServiceException
 
 app = Flask(__name__)
 
@@ -102,14 +103,17 @@ def health():
         response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
         return response
     
-    is_loaded = all([model, data, doc_embeddings, keys])
-    return jsonify({
-        "status": "healthy" if is_loaded else "not_ready",
-        "model_loaded": model is not None,
-        "data_loaded": data is not None,
-        "embeddings_loaded": doc_embeddings is not None,
-        "total_documents": len(keys) if keys else 0
-    })
+    try:
+        # Use the health service
+        health_status = HealthService.health_service(model, data, doc_embeddings, keys)
+        return jsonify(health_status)
+        
+    except HealthServiceException as e:
+        # Handle health service specific exceptions
+        return jsonify({"error": str(e), "status": "error"}), 500
+    except Exception as e:
+        # Handle unexpected errors
+        return jsonify({"error": f"Health check failed: {str(e)}", "status": "error"}), 500
 
 
 
