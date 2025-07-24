@@ -11,19 +11,32 @@ const InputMonitor = ({
   isLoading,
   setIsLoading 
 }) => {
+
+//----------------------------------------------------------------------------------------------------------------------------------------- 
+  //ISOLATED FUNCTIONS
+
+  //reference to textarea node in UI
   const textareaRef = useRef(null);
+  //reference to character count node in UI
   const [characterCount, setCharacterCount] = useState(0);
 
+
+  //updates character count via user keyboard input
   useEffect(() => {
     setCharacterCount(currentInputText.length);
   }, [currentInputText]);
 
+
+
+  //updates text inside textarea
   const handleTextChange = (e) => {
     const newText = e.target.value;
     setCurrentInputText(newText);
     setLastUpdated(new Date().toISOString());
   };
 
+
+  //clears text inside textarea
   const handleClearText = () => {
     setCurrentInputText('');
     setLastUpdated(new Date().toISOString());
@@ -33,10 +46,32 @@ const InputMonitor = ({
   };
 
 
+  //handles search after click search button
+  const handleSearch = async () => {
+    if (!currentInputText.trim()) {
+      alert('Please enter some text to search');
+      return;
+    }
 
+    setIsLoading(true);
+    integrateBackend() //Integrated Function
+    
+    
+  };
+
+  const formatLastUpdated = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return `Last updated: ${date.toLocaleTimeString()}`;
+  };
+
+
+  //-----------------------------------------------------------------------------------------------------------------------------------------
+      //INTEGRATED FUNCTIONS
+
+
+  //integration function with backend to send query
   const integrateBackend = async () => {
-
-
     const data = {
       "query": "example text",
       "results": [
@@ -50,27 +85,14 @@ const InputMonitor = ({
       "total_results": 1
     }
     onSearch(data);
-    setIsLoading(false);
-    
+    setIsLoading(false);  
   }
 
-  const handleSearch = async () => {
-    if (!currentInputText.trim()) {
-      alert('Please enter some text to search');
-      return;
-    }
 
-    setIsLoading(true);
-    integrateBackend()
-    
-    
-  };
+  
+//-----------------------------------------------------------------------------------------------------------------------------------------
+  // HTML for component w/ dynamically rendered TypeScript-HTML
 
-  const formatLastUpdated = (timestamp) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return `Last updated: ${date.toLocaleTimeString()}`;
-  };
 
   return (
     <div className="input-monitor">
