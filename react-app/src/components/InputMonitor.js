@@ -67,7 +67,7 @@ const InputMonitor = ({
 
 
   //-----------------------------------------------------------------------------------------------------------------------------------------
-      //INTEGRATED FUNCTIONS
+      //BACKEND INTEGRATION FUNCTIONS
 
 
   //integration function with backend to send query
