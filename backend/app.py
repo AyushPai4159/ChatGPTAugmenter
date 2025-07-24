@@ -5,6 +5,8 @@ import numpy as np
 import json
 import torch
 import os
+from routes.search import SearchService, SearchServiceException
+from routes.health import HealthService, HealthServiceException
 
 app = Flask(__name__)
 
@@ -37,6 +39,106 @@ data = None
 doc_embeddings = None
 keys = None
 
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/')
+def index():
+    """Main page"""
+    return render_template('index.html')
+
+
+
+"""--------------------------------------------------------------------------------------------------------------------------------------------------------"""
+
+"""SEARCH SERVICES"""
+
+
+def searchExtractJsonParameters() -> list:
+    data = request.get_json()
+    query = data.get('query', '').strip()
+    top_k = data.get('top_k', 6)
+    if not query:
+        return jsonify({"error": "Query cannot be empty"}), 400
+    return {"query": query, "top_k": top_k}
+
+
+
+
+
+@app.route('/search', methods=['POST', 'OPTIONS'])
+def search_documents_and_extract_results():
+    """API endpoint for searching documents given user query and returns a top 6 list of the closest queries and their responses"""
+   
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        return response
+    
+    try:
+        
+        extract = searchExtractJsonParameters() #custom function
+        query, top_k = extract['query'], 6
+        results = SearchService.search_documents_and_extract_results(query, top_k, model, data, doc_embeddings, keys) # backend/routes/search.py
+        
+        return jsonify(results)
+        
+    except SearchServiceException as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
+
+
+
+"""--------------------------------------------------------------------------------------------------------------------------------------------------------"""
+
+"""HEALTH SERVICES"""
+
+
+
+
+@app.route('/health', methods=['GET', 'OPTIONS'])
+def health():
+    """Health check endpoint"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        return response
+    
+    try:
+        # Use the health service
+        health_status = HealthService.health_service(model, data, doc_embeddings, keys)
+        return jsonify(health_status)
+        
+    except HealthServiceException as e:
+        # Handle health service specific exceptions
+        return jsonify({"error": str(e), "status": "error"}), 500
+    except Exception as e:
+        # Handle unexpected errors
+        return jsonify({"error": f"Health check failed: {str(e)}", "status": "error"}), 500
+
+
+
+"""--------------------------------------------------------------------------------------------------------------------------------------------------------"""
+
+"""GENERAL INIT SERVICES"""
+
+
+
 def load_model_and_data():
     """Load the model and data on startup"""
     global model, data, doc_embeddings, keys
@@ -67,91 +169,10 @@ def load_model_and_data():
         print(f"❌ Error loading model and data: {e}")
         raise e
 
-def search_documents(query, top_k=6):
-    """Search for similar documents based on the query"""
-    if not all([model, data, doc_embeddings.all(), keys]):
-        return {"error": "Model or data not loaded"}
-    
-    try:
-        # Encode the query
-        query_embedding = model.encode(query, convert_to_tensor=True)
-        
-        # Calculate cosine similarities
-        cos_scores = util.pytorch_cos_sim(query_embedding, doc_embeddings)
-        
-        # Get top k results
-        top_scores, top_indices = torch.topk(cos_scores, k=min(top_k, len(keys)))
-        
-        # Flatten scores for easier access
-        cos_scores = cos_scores.flatten()
-        
-        # Prepare results
-        results = []
-        for idx in top_indices[0]:
-            key = keys[idx]
-            similarity = float(cos_scores[idx])
-            content = data[key]
-            
-            results.append({
-                "key": key,
-                "similarity": similarity,
-                "content": content
-            })
-        
-        return {"results": results, "query": query, "total_results": len(results)}
-        
-    except Exception as e:
-        return {"error": f"Search error: {str(e)}"}
 
-@app.route('/')
-def index():
-    """Main page"""
-    return render_template('index.html')
 
-@app.route('/search', methods=['POST', 'OPTIONS'])
-def search():
-    """API endpoint for searching documents"""
-    # Handle preflight OPTIONS request
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        return response
-    
-    try:
-        data = request.get_json()
-        query = data.get('query', '').strip()
-        top_k = data.get('top_k', 6)
-        
-        if not query:
-            return jsonify({"error": "Query cannot be empty"}), 400
-        
-        results = search_documents(query, top_k)
-        return jsonify(results)
-        
-    except Exception as e:
-        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-@app.route('/health', methods=['GET', 'OPTIONS'])
-def health():
-    """Health check endpoint"""
-    # Handle preflight OPTIONS request
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
-        return response
-    
-    is_loaded = all([model, data, doc_embeddings, keys])
-    return jsonify({
-        "status": "healthy" if is_loaded else "not_ready",
-        "model_loaded": model is not None,
-        "data_loaded": data is not None,
-        "embeddings_loaded": doc_embeddings is not None,
-        "total_documents": len(keys) if keys else 0
-    })
+
 
 if __name__ == '__main__':
     print("🚀 Starting Semantic Search Flask Application...")
