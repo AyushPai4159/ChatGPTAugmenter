@@ -6,8 +6,7 @@ import json
 import torch
 import os
 from routes.search import SearchService, SearchServiceException
-from routes.health import HealthService, HealthServiceException
-
+from routes.extract import extract_service, ExtractServiceException
 app = Flask(__name__)
 
 """-------------------------------------------------------------------------------------------------------"""
@@ -33,9 +32,48 @@ integrateCORS()
 
 # Global variables to store model and data
 model = None
-data = None
-doc_embeddings = None
-keys = None
+
+"""-------------------------------------------------------------------------------------------------------"""
+
+"""EXTRACT SERVICES"""
+
+@app.route('/extract', methods=['POST', 'OPTIONS'])
+def extract():
+    """API endpoint for extracting UUID, conversations.json, and creating doc_embeddings to be sent to database"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        return response
+    
+    try:
+        request_data = request.get_json()
+        
+        # Extract UUID and conversation data from request
+        user_uuid = request_data.get('uuid')
+        conversations_data = request_data.get('data')
+        
+        # Validate required fields
+        if not user_uuid:
+            return jsonify({"error": "UUID is required"}), 400
+        
+        if not conversations_data:
+            return jsonify({"error": "Conversation data is required"}), 400
+        
+        # Use the extract service to process the data
+        result = extract_service(conversations_data, user_uuid, model)
+        
+        return jsonify(result)
+        
+    except ExtractServiceException as e:
+        # Handle extract service specific exceptions
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        # Handle unexpected errors
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
 
 
 
@@ -48,13 +86,12 @@ keys = None
 """SEARCH SERVICES"""
 
 
-def searchExtractJsonParameters() -> list:
-    data = request.get_json()
+def searchExtractJsonParameters(data) -> dict:
     query = data.get('query', '').strip()
-    top_k = data.get('top_k', 6)
-    if not query:
-        return jsonify({"error": "Query cannot be empty"}), 400
-    return {"query": query, "top_k": top_k}
+    uuid = data.get('uuid', '').strip()
+    if not query or not uuid:
+        raise SearchServiceException("Query and uuid cannot be empty")
+    return {"uuid": uuid, "query": query}
 
 
 
@@ -73,48 +110,16 @@ def search_documents_and_extract_results():
     
     try:
         
-        extract = searchExtractJsonParameters() #custom function
-        query, top_k = extract['query'], 6
-        results = SearchService.search_documents_and_extract_results(query, top_k, model, data, doc_embeddings, keys) # backend/routes/search.py
+        extract = searchExtractJsonParameters(request.get_json()) #custom function
+        uuid = extract['uuid']
+        query = extract['query'] 
+        top_k = 6
+        results = SearchService.search_documents_and_extract_results(uuid, query, top_k, model) # backend/routes/search.py
         
         return jsonify(results)
         
     except SearchServiceException as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
-
-
-
-
-
-"""--------------------------------------------------------------------------------------------------------------------------------------------------------"""
-
-"""HEALTH SERVICES"""
-
-
-
-
-@app.route('/health', methods=['GET', 'OPTIONS'])
-def health():
-    """Health check endpoint"""
-    # Handle preflight OPTIONS request
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
-        return response
-    
-    try:
-        # Use the health service
-        health_status = HealthService.health_service(model, data, doc_embeddings, keys)
-        return jsonify(health_status)
-        
-    except HealthServiceException as e:
-        # Handle health service specific exceptions
-        return jsonify({"error": str(e), "status": "error"}), 500
-    except Exception as e:
-        # Handle unexpected errors
-        return jsonify({"error": f"Health check failed: {str(e)}", "status": "error"}), 500
 
 
 
@@ -140,21 +145,6 @@ def load_model_and_data():
         model_path = os.path.join(os.path.dirname(__file__), 'my_model_dir')
         model = SentenceTransformer(model_path)
         
-        # Load the JSON data
-        data_path = os.path.join(os.path.dirname(__file__), 'data', 'output.json')
-        with open(data_path, "r") as file:
-            data = json.load(file)
-        
-        # Load precomputed embeddings
-        embeddings_path = os.path.join(os.path.dirname(__file__), 'data', 'doc_embeddings.npy')
-        doc_embeddings_np = np.load(embeddings_path)
-        doc_embeddings = torch.tensor(doc_embeddings_np)
-        
-        # Get all keys
-        keys = list(data.keys())
-        
-        print(f"✅ Model and data loaded successfully!")
-        print(f"📊 Loaded {len(keys)} documents")
         print(f"🤖 Model: {model}")
         
     except Exception as e:
