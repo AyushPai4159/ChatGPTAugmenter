@@ -6,7 +6,7 @@ import json
 import torch
 import os
 from routes.search import SearchService, SearchServiceException
-from routes.extract import extract_service, ExtractServiceException
+from routes.extract import ExtractService, ExtractServiceException
 app = Flask(__name__)
 
 """-------------------------------------------------------------------------------------------------------"""
@@ -37,6 +37,27 @@ model = None
 
 """EXTRACT SERVICES"""
 
+
+
+def extractJsonParameters(data) -> dict:
+    # Extract UUID and conversation data from request
+    user_uuid = data.get('uuid')
+    conversations_data = data.get('data')
+    # Validate required fields
+    if not user_uuid:
+        return jsonify({"error": "UUID is required"}), 400
+    if not conversations_data:
+        return jsonify({"error": "Conversation data is required"}), 400
+    
+    return {"user_uuid" : user_uuid, "conversations_data" : conversations_data}
+
+
+
+
+
+
+
+
 @app.route('/extract', methods=['POST', 'OPTIONS'])
 def extract():
     """API endpoint for extracting UUID, conversations.json, and creating doc_embeddings to be sent to database"""
@@ -49,22 +70,9 @@ def extract():
         return response
     
     try:
-        request_data = request.get_json()
-        
-        # Extract UUID and conversation data from request
-        user_uuid = request_data.get('uuid')
-        conversations_data = request_data.get('data')
-        
-        # Validate required fields
-        if not user_uuid:
-            return jsonify({"error": "UUID is required"}), 400
-        
-        if not conversations_data:
-            return jsonify({"error": "Conversation data is required"}), 400
-        
+        extract = extractJsonParameters(request.get_json())
         # Use the extract service to process the data
-        result = extract_service(conversations_data, user_uuid, model)
-        
+        result = ExtractService.extract_service(extract['conversations_data'], extract['user_uuid'], model)
         return jsonify(result)
         
     except ExtractServiceException as e:
@@ -86,7 +94,7 @@ def extract():
 """SEARCH SERVICES"""
 
 
-def searchExtractJsonParameters(data) -> dict:
+def searchJsonParameters(data) -> dict:
     query = data.get('query', '').strip()
     uuid = data.get('uuid', '').strip()
     if not query or not uuid:
@@ -110,9 +118,9 @@ def search_documents_and_extract_results():
     
     try:
         
-        extract = searchExtractJsonParameters(request.get_json()) #custom function
-        uuid = extract['uuid']
-        query = extract['query'] 
+        search = searchJsonParameters(request.get_json()) #custom function
+        uuid = search['uuid']
+        query = search['query'] 
         top_k = 6
         results = SearchService.search_documents_and_extract_results(uuid, query, top_k, model) # backend/routes/search.py
         

@@ -12,6 +12,59 @@ class ExtractServiceException(Exception):
 
 
 class ExtractService:
+
+
+    """--------------------------------------------------------------------------------------------------------------"""
+    """ROOT FUNCTION"""
+
+    @staticmethod
+    def extract_service(conversations_data, user_uuid, model):
+        """
+        Main service function for extracting and processing conversations
+        
+        Args:
+            conversations_data (list): Raw conversation data
+            user_uuid (str): User's UUID
+            model: SentenceTransformer model
+            
+        Returns:
+            dict: Processing result with database save confirmation
+            
+        Raises:
+            ExtractServiceException: If any step fails
+        """
+        try:
+            # Step 1: Process conversations (similar to exportData())
+            print(f"🔄 Processing conversations for user {user_uuid[:8]}...")
+            processed_data = ExtractService.process_conversations(conversations_data, user_uuid)
+            
+            # Step 2: Create embeddings
+            print(f"🧠 Creating embeddings for {len(processed_data)} documents...")
+            embeddings = ExtractService.create_embeddings(processed_data, model)
+            
+            # Step 3: Save to database (mock)
+            print(f"💾 Saving to database...")
+            db_result = ExtractService.save_to_database(user_uuid, processed_data, embeddings)
+            
+            return {
+                "success": True,
+                "message": f"Successfully processed {len(processed_data)} conversation segments",
+                "user_uuid": user_uuid,
+                "total_documents": len(processed_data),
+                "embeddings_shape": list(embeddings.shape),
+                "database_result": db_result
+            }
+            
+        except Exception as e:
+            if isinstance(e, ExtractServiceException):
+                raise
+            raise ExtractServiceException(f"Extract service failed: {str(e)}")
+
+    """--------------------------------------------------------------------------------------------------------------"""
+    """PROCESS ALL CONVERSATIONS"""
+
+
+    #SUBROOT FUNCTION
     @staticmethod
     def process_conversations(conversations_data, user_uuid):
         """
@@ -28,48 +81,60 @@ class ExtractService:
             ExtractServiceException: If processing fails
         """
         try:
-            docs = {}
-            
-            if not isinstance(conversations_data, list):
-                raise ExtractServiceException("Conversations data must be a list")
-            
-            for point in conversations_data:
-                if 'mapping' not in point:
-                    continue
-                    
-                pointers = point['mapping']
-                keys = pointers.keys()
-                user = "dummy"
-                
-                for key in keys:
-                    value = pointers[key]
-                    if value.get('message') is not None:
-                        content = value['message']['content']
-                        text = ""
-                        
-                        if 'parts' in content and content['parts']:
-                            text = str(content['parts'][0])
-                        elif 'text' in content:
-                            text = str(content['text'])
-                        
-                        if text.strip():  # Only process non-empty text
-                            role = value['message']['author']['role']
-                            if role == "user":
-                                user = text
-                            elif role != "system":
-                                # Use UUID + timestamp or counter to create unique keys
-                                docs[user] = text
-            
+            docs : dict = ExtractService.extract_conversation_tree(conversations_data, user_uuid)
             if not docs:
-                raise ExtractServiceException("No valid conversations found in the data")
-                
+                raise ExtractServiceException("No valid conversations found in the data. Make sure to check you uploaded the right conversations.json file")
             return docs
             
         except Exception as e:
             if isinstance(e, ExtractServiceException):
                 raise
             raise ExtractServiceException(f"Failed to process conversations: {str(e)}")
-    
+
+
+
+    @staticmethod
+    def extract_conversation_tree(conversations_data, user_uuid) -> dict:
+
+        docs = {}
+
+        if not isinstance(conversations_data, list):
+            raise ExtractServiceException("Conversations data must be a list")
+            
+        for point in conversations_data:
+            if 'mapping' not in point:
+                continue
+                
+            pointers = point['mapping']
+            keys = pointers.keys()
+            user = "dummy"
+            
+            for key in keys:
+                value = pointers[key]
+                if value.get('message') is not None:
+                    content = value['message']['content']
+                    text = ""
+                    
+                    if 'parts' in content and content['parts']:
+                        text = str(content['parts'][0])
+                    elif 'text' in content:
+                        text = str(content['text'])
+                    
+                    if text.strip():  # Only process non-empty text
+                        role = value['message']['author']['role']
+                        if role == "user":
+                            user = text
+                        elif role != "system":
+                            # Use UUID + timestamp or counter to create unique keys
+                            docs[user] = text
+        
+        return docs
+
+
+    """--------------------------------------------------------------------------------------------------------------"""
+    """CREATING EMBEDDINGS FOR CONVERSATIONS"""
+
+    #SUBROOT FUNCTION
     @staticmethod
     def create_embeddings(processed_data, model):
         """
@@ -88,10 +153,9 @@ class ExtractService:
         try:
             if not model:
                 raise ExtractServiceException("Model not available for creating embeddings")
-            
             if not processed_data:
                 raise ExtractServiceException("No processed data available for creating embeddings")
-            
+
             texts = list(processed_data.values())
             
             # Create embeddings
@@ -103,7 +167,14 @@ class ExtractService:
             if isinstance(e, ExtractServiceException):
                 raise
             raise ExtractServiceException(f"Failed to create embeddings: {str(e)}")
-    
+
+
+
+    """--------------------------------------------------------------------------------------------------------------"""
+    """SAVE ALL DATA TO DATABASE"""
+
+
+    #SUBROOT FUNCTION
     @staticmethod
     def save_to_database(user_uuid, processed_data, embeddings):
         """
@@ -120,81 +191,54 @@ class ExtractService:
         Raises:
             ExtractServiceException: If database save fails
         """
-        try:
-            
-            
+        try:   
             # Convert embeddings tensor to numpy array and then to base64
-            embeddings_np = embeddings.cpu().numpy() if hasattr(embeddings, 'cpu') else embeddings
-            embeddings_bytes = embeddings_np.tobytes()
-            embeddings_b64 = base64.b64encode(embeddings_bytes).decode('utf-8')
-            
-            # Create the data structure
+            embeddings_b64 = ExtractService.convert_tensor_to_base64(embeddings)
             user_data = {
                 user_uuid: {
                     "embeddings": embeddings_b64,
                     "processed_data": processed_data
                 }
             }
-            
-            # Define the file path
-            file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'userData.json')
-            
-            # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            
-            # Save to JSON file
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(user_data, f, indent=2, ensure_ascii=False)
-            
+            file_path = ExtractService.push_data_to_database(user_data)
             return {
                 "success": True,
                 "user_uuid": user_uuid,
                 "file_path": file_path,
                 "total_documents": len(processed_data)
-            }
-            
+            }    
         except Exception as e:
             raise ExtractServiceException(f"Database save failed: {str(e)}")
 
 
-def extract_service(conversations_data, user_uuid, model):
-    """
-    Main service function for extracting and processing conversations
+    @staticmethod
+    def convert_tensor_to_base64(embeddings):
+        embeddings_np = embeddings.cpu().numpy() if hasattr(embeddings, 'cpu') else embeddings
+        embeddings_bytes = embeddings_np.tobytes()
+        embeddings_b64 = base64.b64encode(embeddings_bytes).decode('utf-8')
+        
+        # Create the data structure
+        
+        return embeddings_b64
+
+    @staticmethod
+    def push_data_to_database(user_data):
+        # Define the file path
+        file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'userData.json')
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        # Save to JSON file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(user_data, f, indent=2, ensure_ascii=False)
+
+        return file_path
+
+
     
-    Args:
-        conversations_data (list): Raw conversation data
-        user_uuid (str): User's UUID
-        model: SentenceTransformer model
-        
-    Returns:
-        dict: Processing result with database save confirmation
-        
-    Raises:
-        ExtractServiceException: If any step fails
-    """
-    try:
-        # Step 1: Process conversations (similar to exportData())
-        print(f"🔄 Processing conversations for user {user_uuid[:8]}...")
-        processed_data = ExtractService.process_conversations(conversations_data, user_uuid)
-        
-        # Step 2: Create embeddings
-        print(f"🧠 Creating embeddings for {len(processed_data)} documents...")
-        embeddings = ExtractService.create_embeddings(processed_data, model)
-        
-        # Step 3: Save to database (mock)
-        print(f"💾 Saving to database...")
-        db_result = ExtractService.save_to_database(user_uuid, processed_data, embeddings)
-        
-        return {
-            "success": True,
-            "message": f"Successfully processed {len(processed_data)} conversation segments",
-            "user_uuid": user_uuid,
-            "total_documents": len(processed_data),
-            "embeddings_shape": list(embeddings.shape),
-            "database_result": db_result
-        }
-        
-    except Exception as e:
-        if isinstance(e, ExtractServiceException):
-            raise
-        raise ExtractServiceException(f"Extract service failed: {str(e)}")
+
+
+
+
+    
