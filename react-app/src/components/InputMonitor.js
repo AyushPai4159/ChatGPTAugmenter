@@ -63,6 +63,22 @@ const InputMonitor = ({
     }
   }
 
+  const handleSearch = async () => {
+    if (!currentInputText.trim()) {
+      alert('Please enter some text to search');
+      return;
+    }
+
+    setIsLoading(true);
+    await integrateBackend();
+  };
+
+  const formatLastUpdated = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return `Last updated: ${date.toLocaleTimeString()}`;
+  };
+
 
   
 //-----------------------------------------------------------------------------------------------------------------------------------------

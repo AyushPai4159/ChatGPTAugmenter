@@ -31,11 +31,58 @@ const FileUpload = ({ userUUID }) => {
   };
 
   const integrateBackendUpload = async () => {
-    console.log("Sending upload request to backend with UUID:", userUUID);
-    console.log("File:", selectedFile?.name);
-    console.log("Unimplemented as of now");
-    setIsUploading(false);
-    setUploadStatus('success');
+    try {
+      console.log("Sending upload request to backend with UUID:", userUUID);
+      console.log("File:", selectedFile?.name);
+      
+      // Read the JSON file content
+      const fileContent = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const jsonData = JSON.parse(e.target.result);
+            resolve(jsonData);
+          } catch (parseError) {
+            reject(new Error('Invalid JSON file format'));
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsText(selectedFile);
+      });
+      
+      // Prepare the payload
+      const payload = {
+        uuid: userUUID,
+        data: fileContent
+      };
+      
+      console.log("Sending payload to /extract endpoint...");
+      
+      // Send to backend
+      const response = await axios.post('http://localhost:5000/extract', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log("Backend response:", response.data);
+      setIsUploading(false);
+      setUploadStatus('success');
+      
+    } catch (error) {
+      console.error("Upload error:", error);
+      setIsUploading(false);
+      setUploadStatus('error');
+      
+      // Show specific error message
+      if (error.response?.data?.error) {
+        alert(`Upload failed: ${error.response.data.error}`);
+      } else if (error.message) {
+        alert(`Upload failed: ${error.message}`);
+      } else {
+        alert('Upload failed. Please try again.');
+      }
+    }
   }
 
   const handleUpload = async () => {
