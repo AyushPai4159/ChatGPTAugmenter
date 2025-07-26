@@ -28,17 +28,6 @@ if [ ! -f "my_model_dir/config.json" ]; then
     sh setup.sh
 fi
 
-if [ ! -f "data/output.json" ]; then
-    echo "❌ Error: Data file 'data/output.json' not found!"
-    echo "Please ensure the data files are in the correct location."
-    sh setup.sh
-fi
-
-if [ ! -f "data/doc_embeddings.npy" ]; then
-    echo "❌ Error: Embeddings file 'data/doc_embeddings.npy' not found!"
-    echo "Please ensure the embeddings file is in the correct location."
-    sh setup.sh
-fi
 
 echo "✅ All required files found!"
 echo ""
