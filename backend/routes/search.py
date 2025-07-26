@@ -134,7 +134,7 @@ class SearchService:
             
             # Check if file exists
             if not os.path.exists(file_path):
-                raise SearchServiceException("userData.json file not found")
+                raise SearchServiceException("userData.json file not found, possibly because conversations.json wasn't initially extracted")
             
             # Load the JSON file
             with open(file_path, 'r', encoding='utf-8') as f:

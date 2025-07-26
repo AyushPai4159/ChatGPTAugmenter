@@ -51,10 +51,15 @@ const InputMonitor = ({
       console.error('Search error:', error);
       let errorMessage = 'Search failed. ';
       
-      if (error.message.includes('Network Error') || error.code === 'ERR_NETWORK') {
+      // Check for server response errors first
+      if (error.response?.data?.error) {
+        errorMessage += error.response.data.error;
+      } else if (error.message.includes('Network Error') || error.code === 'ERR_NETWORK') {
         errorMessage += 'Make sure your Flask server is running on localhost:5000';
-      } else {
+      } else if (error.message) {
         errorMessage += error.message;
+      } else {
+        errorMessage += 'Unknown error occurred';
       }
       
       alert(errorMessage);
