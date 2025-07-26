@@ -1,12 +1,7 @@
 from sentence_transformers import SentenceTransformer
 import json
 
-# Load JSON data from file
-with open("../data/output.json", "r") as file:
-    data = json.load(file)
 
-
-keys = list(data.keys())
 
 
 

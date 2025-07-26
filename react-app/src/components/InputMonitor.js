@@ -39,7 +39,7 @@ const InputMonitor = ({
     try {
       const response = await axios.post('/search', {
         query: currentInputText.trim(),
-        top_k: 6
+        uuid: userUUID
       });
 
       if (response.data.error) {

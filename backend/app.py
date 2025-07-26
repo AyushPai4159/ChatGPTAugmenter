@@ -21,25 +21,12 @@ app = Flask(__name__)
 
 
 def integrateCORS():
-    CORS(app, resources={
-        r"/search": {
-            "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
-            "methods": ["GET", "POST", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
-        },
-        r"/extract": {
-            "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
-            "methods": ["POST", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
-        },
-        r"/health": {
-            "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
-            "methods": ["GET", "OPTIONS"],
-            "allow_headers": ["Content-Type"]
-        }
-    })
-    
-print("CORS is enabled for React app and browser extensions")
+    # More permissive CORS for development
+    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    print("CORS is enabled for React app and browser extensions")
+
+
+integrateCORS()
 
 
 
@@ -64,9 +51,9 @@ def extractJsonParameters(data) -> dict:
     conversations_data = data.get('data')
     # Validate required fields
     if not user_uuid:
-        return jsonify({"error": "UUID is required"}), 400
+        raise ExtractServiceException("UUID is required")
     if not conversations_data:
-        return jsonify({"error": "Conversation data is required"}), 400
+        raise ExtractServiceException("Conversation data is required")
     
     return {"user_uuid" : user_uuid, "conversations_data" : conversations_data}
 
