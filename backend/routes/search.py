@@ -39,7 +39,7 @@ class SearchService:
                 raise SearchServiceException("Model, query, or uuid not provided")
             
             # Extract data from database
-            database_extraction = SearchService.integrate_database_extraction(uuid, query)
+            database_extraction = SearchService.integrate_database_extraction(uuid)
             
             # Calculate similarity scores
             cos_package = SearchService.query_doc_similarity_scores_UNCHANGED(
@@ -74,7 +74,7 @@ class SearchService:
     """DATABASE EXTRACTION FUNCTIONS"""
     
     @staticmethod
-    def integrate_database_extraction(uuid, query):
+    def integrate_database_extraction(uuid):
         """
         Extract data from userData.json for a specific user UUID
         
@@ -112,7 +112,7 @@ class SearchService:
         except Exception as e:
             if isinstance(e, SearchServiceException):
                 raise
-            raise SearchServiceException(f"Database extraction failed: {str(e)}")
+            raise SearchServiceException(f"Database extraction failed (could be an invalid uuid): {str(e)}")
     
     @staticmethod
     def load_user_data_from_file(uuid):

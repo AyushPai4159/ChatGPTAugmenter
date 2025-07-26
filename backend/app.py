@@ -7,6 +7,7 @@ import torch
 import os
 from routes.search import SearchService, SearchServiceException
 from routes.extract import ExtractService, ExtractServiceException
+from routes.health import HealthService, HealthServiceException
 app = Flask(__name__)
 
 """-------------------------------------------------------------------------------------------------------"""
@@ -132,6 +133,57 @@ def search_documents_and_extract_results():
 
 
 """--------------------------------------------------------------------------------------------------------------------------------------------------------"""
+"""HEALTH SERVICES"""
+
+@app.route('/health', methods=['GET', 'OPTIONS'])
+def health_no_uuid():
+    """Health check endpoint when no UUID is provided"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        return response
+    
+    return jsonify({
+        "error": "UUID is required. Please provide a UUID in the URL path: /health/<uuid>", 
+        "status": "error"
+    }), 400
+
+@app.route('/health/<uuid>', methods=['GET', 'OPTIONS'])
+def health(uuid):
+    """Health check endpoint"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        return response
+
+    # Validate UUID parameter
+    if not uuid or uuid.strip() == '':
+        return jsonify({"error": "UUID is required", "status": "error"}), 400
+    
+    try:
+        # Use the health service
+        health_status = HealthService.health_service(model, uuid)
+        return jsonify(health_status)
+        
+    except HealthServiceException as e:
+        # Handle health service specific exceptions
+        return jsonify({"error": str(e), "status": "error"}), 500
+    except Exception as e:
+        # Handle unexpected errors
+        return jsonify({"error": f"Health check failed: {str(e)}", "status": "error"}), 500
+
+
+
+
+
+
+"""--------------------------------------------------------------------------------------------------------------------------------------------------------"""
+
 
 """GENERAL INIT SERVICES and OTHER ROUTES"""
 
