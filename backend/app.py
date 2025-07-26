@@ -22,21 +22,24 @@ app = Flask(__name__)
 
 def integrateCORS():
     CORS(app, resources={
-    r"/search": {
-        "origins": ["chrome-extension://*", "moz-extension://*"],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    },
-    r"/health": {
-        "origins": ["chrome-extension://*", "moz-extension://*"],
-        "methods": ["GET", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
+        r"/search": {
+            "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        },
+        r"/extract": {
+            "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
+            "methods": ["POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        },
+        r"/health": {
+            "origins": ["chrome-extension://*", "moz-extension://*", "http://localhost:3000"],
+            "methods": ["GET", "OPTIONS"],
+            "allow_headers": ["Content-Type"]
+        }
     })
-    print("CORS is enabled")
-
-
-integrateCORS()
+    
+print("CORS is enabled for React app and browser extensions")
 
 
 
