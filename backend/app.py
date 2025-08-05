@@ -8,7 +8,18 @@ import os
 from routes.search import SearchService, SearchServiceException
 from routes.extract import ExtractService, ExtractServiceException
 from routes.health import HealthService, HealthServiceException
+from routes.delete import DeleteService, DeleteServiceException
 app = Flask(__name__)
+
+
+
+"""-------------------------------------------------------------------------------------------------------"""
+
+"""GLOBAL VARIABLES"""
+
+
+# Global variables to store model and data
+model = None
 
 """-------------------------------------------------------------------------------------------------------"""
 
@@ -22,22 +33,32 @@ app = Flask(__name__)
 
 def integrateCORS():
     # More permissive CORS for development
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    CORS(app, origins=["*"], supports_credentials=True)
     print("CORS is enabled for React app and browser extensions")
+
+
+def load_model_and_data():
+    """Load the model and data on startup"""
+    global model
+    
+    try:
+        # Load the sentence transformer model
+        model_path = os.path.join(os.path.dirname(__file__), 'my_model_dir')
+        model = SentenceTransformer(model_path)
+        
+        print(f"🤖 Model: {model}")
+        
+    except Exception as e:
+        print(f"❌ Error loading model and data: {e}")
+        raise e
 
 
 integrateCORS()
 
+load_model_and_data()
 
 
 
-"""-------------------------------------------------------------------------------------------------------"""
-
-"""GLOBAL VARIABLES"""
-
-
-# Global variables to store model and data
-model = None
 
 """-------------------------------------------------------------------------------------------------------"""
 
@@ -74,6 +95,9 @@ def extract():
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
         return response
+
+    if not model:
+        load_model_and_data()
     
     try:
         extract = extractJsonParameters(request.get_json())
@@ -121,6 +145,9 @@ def search_documents_and_extract_results():
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
         return response
+
+    if not model:
+        load_model_and_data()
     
     try:
         
@@ -134,6 +161,39 @@ def search_documents_and_extract_results():
         
     except SearchServiceException as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
+"""--------------------------------------------------------------------------------------------------------------------------------------------------------"""
+
+"""DELETE SERVICES"""
+
+@app.route('/delete/<uuid>', methods=['DELETE', 'OPTIONS'])
+def delete_user_data(uuid):
+    """API endpoint for deleting user data by UUID"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'DELETE, OPTIONS')
+        return response
+
+    # Validate UUID parameter
+    if not uuid or uuid.strip() == '':
+        return jsonify({"error": "UUID is required", "status": "error"}), 400
+    
+    try:
+        
+        # Use the delete service
+        delete_result = DeleteService.delete_data_from_uuid(uuid)
+        return jsonify(delete_result)
+        
+    except DeleteServiceException as e:
+        # Handle delete service specific exceptions
+        return jsonify({"error": str(e), "status": "error"}), 400
+    except Exception as e:
+        # Handle unexpected errors
+        return jsonify({"error": f"Delete operation failed: {str(e)}", "status": "error"}), 500
 
 
 
@@ -201,20 +261,7 @@ def index():
 
 
 
-def load_model_and_data():
-    """Load the model and data on startup"""
-    global model, data, doc_embeddings, keys
-    
-    try:
-        # Load the sentence transformer model
-        model_path = os.path.join(os.path.dirname(__file__), 'my_model_dir')
-        model = SentenceTransformer(model_path)
-        
-        print(f"🤖 Model: {model}")
-        
-    except Exception as e:
-        print(f"❌ Error loading model and data: {e}")
-        raise e
+
 
 
 
@@ -228,5 +275,5 @@ if __name__ == '__main__':
     load_model_and_data()
     
     # Run the Flask app
-    print("🌐 Starting Flask server on http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("🌐 Starting Flask server on http://localhost:5001")
+    app.run(debug=True, host='0.0.0.0', port=5001)

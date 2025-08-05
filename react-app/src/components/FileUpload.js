@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import config from '../config';
 import './FileUpload.css';
 
 const FileUpload = ({ userUUID }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [enableDelete, setEnableDelete] = useState(false);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -43,7 +45,7 @@ const FileUpload = ({ userUUID }) => {
             const jsonData = JSON.parse(e.target.result);
             resolve(jsonData);
           } catch (parseError) {
-            reject(new Error('Invalid JSON file format'));
+            reject(new Error('Invalid JSON file format, probably an empty or corrupted file'));
           }
         };
         reader.onerror = () => reject(new Error('Failed to read file'));
@@ -58,16 +60,13 @@ const FileUpload = ({ userUUID }) => {
       
       console.log("Sending payload to /extract endpoint...");
       
-      // Send to backend
-      const response = await axios.post('http://localhost:5000/extract', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      // Send to backend with authentication headers
+      const response = await axios.post(`${config.API_BASE_URL}/extract`, payload);
       
       console.log("Backend response:", response.data);
       setIsUploading(false);
       setUploadStatus('success');
+      setEnableDelete(true); // Enable delete button after successful upload
       
     } catch (error) {
       console.error("Upload error:", error);
@@ -97,9 +96,62 @@ const FileUpload = ({ userUUID }) => {
     
   };
 
+  const handleDelete = async () => {
+    if (!userUUID) {
+      alert('No user UUID available for deletion');
+      return;
+    }
+
+    // Confirm deletion
+    const confirmDelete = window.confirm(
+      '⚠️ Are you sure you want to delete all your data from the database? This action cannot be undone.'
+    );
+    
+    if (!confirmDelete) {
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadStatus('deleting');
+
+    try {
+      console.log("Sending delete request for UUID:", userUUID);
+      
+      // Send delete request to backend with authentication headers
+      const response = await axios.delete(`${config.API_BASE_URL}/delete/${userUUID}`);
+      
+      console.log("Delete response:", response.data);
+      setIsUploading(false);
+      setUploadStatus('deleted');
+      setEnableDelete(false); // Disable delete button after successful deletion
+      
+      // Reset file selection after successful deletion
+      setSelectedFile(null);
+      const fileInput = document.getElementById('file-input');
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+    } catch (error) {
+      console.error("Delete error:", error);
+      setIsUploading(false);
+      setUploadStatus('delete-error');
+      
+      // Show specific error message
+      if (error.response?.data?.error) {
+        alert(`Delete failed: ${error.response.data.error}`);
+      } else if (error.message) {
+        alert(`Delete failed: ${error.message}`);
+      } else {
+        alert('Delete failed. Please try again.');
+      }
+    }
+  };
+
   const resetUpload = () => {
     setSelectedFile(null);
     setUploadStatus('');
+    setEnableDelete(false); // Reset delete state
     // Reset the file input
     const fileInput = document.getElementById('file-input');
     if (fileInput) {
@@ -154,11 +206,11 @@ const FileUpload = ({ userUUID }) => {
 
             {selectedFile && (
               <button
-                onClick={resetUpload}
+                onClick={enableDelete ? handleDelete : resetUpload}
                 disabled={isUploading}
-                className="reset-btn"
+                className={enableDelete ? "delete-btn" : "reset-btn"}
               >
-                🗑️ Clear
+                {enableDelete ? '🗑️ Delete Data' : '🗑️ Clear'}
               </button>
             )}
           </div>
@@ -168,6 +220,9 @@ const FileUpload = ({ userUUID }) => {
               {uploadStatus === 'uploading' && '⏳ Uploading and processing your conversations...'}
               {uploadStatus === 'success' && '✅ Upload completed successfully!'}
               {uploadStatus === 'error' && '❌ Upload failed. Please try again.'}
+              {uploadStatus === 'deleting' && '🗑️ Deleting your data from the database...'}
+              {uploadStatus === 'deleted' && '✅ All your data has been successfully deleted!'}
+              {uploadStatus === 'delete-error' && '❌ Delete failed. Please try again.'}
             </div>
           )}
         </div>

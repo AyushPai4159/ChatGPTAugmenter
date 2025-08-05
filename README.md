@@ -29,7 +29,7 @@ A React web application that provides semantic search capabilities over your Cha
 2. **Prepare Your Data**
    - Go to ChatGPT and export your data (Settings > Data Export)
    - Extract the `conversations.json` file from your exported data
-   - You can now upload `conversations.json` directly through the web interface
+   - Copy `conversations.json` to the `/backend/data/` directory
 
 3. **Run Initial Setup**
    ```bash
@@ -76,12 +76,7 @@ The backend server will run on `http://localhost:5000` and the React app on `htt
    - Navigate to the `react-app` directory and run `npm start`
    - The web app will open at `http://localhost:3000`
 
-2. **Upload Your Conversations**
-   - Click the "Upload Conversations" button in the web interface
-   - Select your `conversations.json` file from your ChatGPT data export
-   - Wait for the processing to complete (this creates embeddings for search)
-
-3. **Search Your Conversations**
+2. **Search Your Conversations**
    - Enter your search query in the input field
    - Click the "Search Documents" button
    - View relevant conversation snippets with similarity scores
@@ -119,7 +114,7 @@ ChatGPTAugmenter/
 ## Troubleshooting
 
 - **React app not starting**: Make sure Node.js and npm are installed, and run `npm install` in the `react-app` directory
-- **No search results**: Ensure you have uploaded your `conversations.json` file through the web interface and processing completed successfully
+- **No search results**: Ensure `conversations.json` is in the correct location and `startup.sh` ran successfully
 - **Server errors**: Check that the Flask server is running on `http://localhost:5000`
 - **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`
 - **Model download issues**: The setup script will download ~80MB for the Sentence Transformer model

@@ -3,6 +3,13 @@
 /backend/data/conversations.json
 /backend/data/doc_embeddings.npy
 /backend/data/output.json
+/backend/data/embeddingData/
 /testFolder/
 /react-app/node_modules/
 /backend/data/userData.json
+/backend/database/.env
+/backend/data/conversations/
+/backend/database/__pycache__
+/backend/routes/__pycache__
+/react-app/.env
+.vscode
