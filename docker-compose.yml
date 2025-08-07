@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  chatgpt-augmenter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # React development server
+      - "5001:5001"  # Flask backend
+    environment:
+      - FLASK_ENV=production
+      - PYTHONPATH=/app
+    volumes:
+      # Mount data directory for persistent storage
+      - ./backend/data:/app/backend/data
+      # Mount model directory for persistent storage (so setup doesn't run every time)
+      - chatgpt_model_data:/app/backend/my_model_dir
+    restart: unless-stopped
+    container_name: chatgpt-augmenter-app
+
+  # Optional: Development version with hot reload
+  chatgpt-augmenter-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"  # React frontend (dev)
+      - "5002:5000"  # Flask backend (dev)
+    environment:
+      - FLASK_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./react-app:/app/react-app
+      - ./backend:/app/backend
+      - /app/react-app/node_modules
+    restart: unless-stopped
+    container_name: chatgpt-augmenter-dev
+    profiles:
+      - dev
+
+# Named volumes for persistent storage
+volumes:
+  chatgpt_model_data:
