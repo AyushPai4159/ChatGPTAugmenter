@@ -58,6 +58,7 @@ class ExtractService:
             
             return {
                 "success": True,
+                "user_uuid": user_uuid,
                 "message": f"Successfully processed {len(processed_data)} conversation segments",
                 "total_documents": len(processed_data),
                 "embeddings_shape": list(embeddings.shape),

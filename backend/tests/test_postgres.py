@@ -8,7 +8,7 @@ import os
 # Add the parent directory to the Python path to import modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from database.postgres import DatabaseService, DatabaseServiceException
+from database.postgres import DatabaseService, DatabaseServiceException, TableNotFoundException, UserNotFoundException
 
 
 class TestDatabaseService:
@@ -189,6 +189,280 @@ class TestDatabaseService:
         with pytest.raises(DatabaseServiceException) as exc_info:
             DatabaseService.delete_user_data(None)
         assert "User UUID is required for deletion" in str(exc_info.value)
+
+    """----------------------------------------------------------------------------------------------------------------------------"""
+    """TESTS FOR EXCEPTION HANDLING - TableNotFoundException and UserNotFoundException"""
+
+    @patch('database.postgres.DatabaseService._execute_delete_query')
+    def test_delete_user_data_table_not_found_exception(self, mock_execute):
+        """Test delete_user_data when table doesn't exist"""
+        # Arrange
+        mock_execute.side_effect = TableNotFoundException("Table 'users' does not exist in the database")
+        
+        # Act & Assert
+        with pytest.raises(TableNotFoundException) as exc_info:
+            DatabaseService.delete_user_data(self.test_uuid)
+        
+        assert "Table 'users' does not exist in the database" in str(exc_info.value)
+        assert isinstance(exc_info.value, DatabaseServiceException)  # Should inherit from base exception
+        mock_execute.assert_called_once_with(self.test_uuid)
+
+    @patch('database.postgres.DatabaseService._execute_delete_query')
+    def test_delete_user_data_user_not_found_exception(self, mock_execute):
+        """Test delete_user_data when user doesn't exist"""
+        # Arrange
+        mock_execute.side_effect = UserNotFoundException(f"User with UUID '{self.test_uuid}' not found in the users table")
+        
+        # Act & Assert
+        with pytest.raises(UserNotFoundException) as exc_info:
+            DatabaseService.delete_user_data(self.test_uuid)
+        
+        assert f"User with UUID '{self.test_uuid}' not found in the users table" in str(exc_info.value)
+        assert isinstance(exc_info.value, DatabaseServiceException)  # Should inherit from base exception
+        mock_execute.assert_called_once_with(self.test_uuid)
+
+    @patch('database.postgres.DatabaseService._execute_delete_query')
+    def test_delete_user_data_general_database_exception(self, mock_execute):
+        """Test delete_user_data with general database exception"""
+        # Arrange
+        mock_execute.side_effect = DatabaseServiceException("Connection timeout")
+        
+        # Act & Assert
+        with pytest.raises(DatabaseServiceException) as exc_info:
+            DatabaseService.delete_user_data(self.test_uuid)
+        
+        assert "Connection timeout" in str(exc_info.value)
+        mock_execute.assert_called_once_with(self.test_uuid)
+
+    @patch('database.postgres.DatabaseService._execute_delete_query')
+    def test_delete_user_data_unexpected_exception_wrapping(self, mock_execute):
+        """Test delete_user_data wraps unexpected exceptions"""
+        # Arrange
+        mock_execute.side_effect = RuntimeError("Unexpected system error")
+        
+        # Act & Assert
+        with pytest.raises(DatabaseServiceException) as exc_info:
+            DatabaseService.delete_user_data(self.test_uuid)
+        
+        assert "Failed to delete user data: Unexpected system error" in str(exc_info.value)
+        mock_execute.assert_called_once_with(self.test_uuid)
+
+    """----------------------------------------------------------------------------------------------------------------------------"""
+    """TESTS FOR _execute_delete_query() - DETAILED EXCEPTION SCENARIOS"""
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_table_does_not_exist(self, mock_get_conn):
+        """Test _execute_delete_query when users table doesn't exist"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Mock table existence check to return False
+        self.mock_cursor.fetchone.return_value = [False]  # Table doesn't exist
+        
+        # Act & Assert
+        with pytest.raises(TableNotFoundException) as exc_info:
+            DatabaseService._execute_delete_query(self.test_uuid)
+        
+        assert "Table 'users' does not exist in the database" in str(exc_info.value)
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_user_does_not_exist(self, mock_get_conn):
+        """Test _execute_delete_query when user doesn't exist"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Mock sequence: table exists (True), then user count is 0
+        self.mock_cursor.fetchone.side_effect = [[True], [0]]  # Table exists, but user count is 0
+        
+        # Act & Assert
+        with pytest.raises(UserNotFoundException) as exc_info:
+            DatabaseService._execute_delete_query(self.test_uuid)
+        
+        assert f"User with UUID '{self.test_uuid}' not found in the users table" in str(exc_info.value)
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_successful_deletion(self, mock_get_conn):
+        """Test _execute_delete_query successful deletion"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Mock sequence: table exists (True), user exists (1), deletion successful
+        self.mock_cursor.fetchone.side_effect = [[True], [1]]  # Table exists, user exists
+        self.mock_cursor.rowcount = 1  # One row deleted
+        
+        # Act
+        result = DatabaseService._execute_delete_query(self.test_uuid)
+        
+        # Assert
+        assert result["success"] is True
+        assert result["deleted_rows"] == 1
+        assert result["uuid"] == self.test_uuid
+        self.mock_connection.commit.assert_called_once()
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_database_execution_error(self, mock_get_conn):
+        """Test _execute_delete_query with database execution error"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Mock table check succeeds, but user check fails with database error
+        self.mock_cursor.fetchone.side_effect = [[True]]  # Table exists
+        self.mock_cursor.execute.side_effect = [None, psycopg.Error("Database connection lost")]
+        
+        # Act & Assert
+        with pytest.raises(DatabaseServiceException) as exc_info:
+            DatabaseService._execute_delete_query(self.test_uuid)
+        
+        assert "Database delete execution failed" in str(exc_info.value)
+        self.mock_connection.rollback.assert_called_once()
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_connection_error(self, mock_get_conn):
+        """Test _execute_delete_query with connection error"""
+        # Arrange
+        mock_get_conn.side_effect = psycopg.Error("Unable to connect to database")
+        
+        # Act & Assert
+        with pytest.raises(DatabaseServiceException) as exc_info:
+            DatabaseService._execute_delete_query(self.test_uuid)
+        
+        assert "Database delete execution failed" in str(exc_info.value)
+
+    """----------------------------------------------------------------------------------------------------------------------------"""
+    """TESTS FOR EXCEPTION INHERITANCE AND BEHAVIOR"""
+
+    def test_table_not_found_exception_inheritance(self):
+        """Test TableNotFoundException inherits from DatabaseServiceException"""
+        # Act
+        exception = TableNotFoundException("Test table error")
+        
+        # Assert
+        assert isinstance(exception, DatabaseServiceException)
+        assert isinstance(exception, Exception)
+        assert str(exception) == "Test table error"
+
+    def test_user_not_found_exception_inheritance(self):
+        """Test UserNotFoundException inherits from DatabaseServiceException"""
+        # Act
+        exception = UserNotFoundException("Test user error")
+        
+        # Assert
+        assert isinstance(exception, DatabaseServiceException)
+        assert isinstance(exception, Exception)
+        assert str(exception) == "Test user error"
+
+    def test_custom_exceptions_are_distinguishable(self):
+        """Test that custom exceptions can be caught separately"""
+        # Test that we can catch TableNotFoundException specifically
+        try:
+            raise TableNotFoundException("Table error")
+        except TableNotFoundException as e:
+            assert str(e) == "Table error"
+        except Exception:
+            pytest.fail("Should have caught TableNotFoundException specifically")
+
+        # Test that we can catch UserNotFoundException specifically
+        try:
+            raise UserNotFoundException("User error")
+        except UserNotFoundException as e:
+            assert str(e) == "User error"
+        except Exception:
+            pytest.fail("Should have caught UserNotFoundException specifically")
+
+    """----------------------------------------------------------------------------------------------------------------------------"""
+    """INTEGRATION TESTS FOR EXCEPTION HANDLING WORKFLOWS"""
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_integration_full_delete_workflow_table_missing(self, mock_get_conn):
+        """Test complete delete workflow when table is missing"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        self.mock_cursor.fetchone.return_value = [False]  # Table doesn't exist
+        
+        # Act & Assert - Should raise TableNotFoundException through the full stack
+        with pytest.raises(TableNotFoundException) as exc_info:
+            DatabaseService.delete_user_data(self.test_uuid)
+        
+        assert "Table 'users' does not exist" in str(exc_info.value)
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_integration_full_delete_workflow_user_missing(self, mock_get_conn):
+        """Test complete delete workflow when user is missing"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Table exists, but user doesn't
+        self.mock_cursor.fetchone.side_effect = [[True], [0]]
+        
+        # Act & Assert - Should raise UserNotFoundException through the full stack
+        with pytest.raises(UserNotFoundException) as exc_info:
+            DatabaseService.delete_user_data(self.test_uuid)
+        
+        assert f"User with UUID '{self.test_uuid}' not found" in str(exc_info.value)
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_integration_full_delete_workflow_success(self, mock_get_conn):
+        """Test complete successful delete workflow"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Table exists, user exists, deletion succeeds
+        self.mock_cursor.fetchone.side_effect = [[True], [1]]
+        self.mock_cursor.rowcount = 1
+        
+        # Act
+        result = DatabaseService.delete_user_data(self.test_uuid)
+        
+        # Assert
+        assert result["success"] is True
+        assert result["deleted_rows"] == 1
+        assert result["uuid"] == self.test_uuid
+
+    """----------------------------------------------------------------------------------------------------------------------------"""
+    """EDGE CASES FOR EXCEPTION HANDLING"""
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_multiple_users_with_same_uuid(self, mock_get_conn):
+        """Test _execute_delete_query when multiple users have same UUID (edge case)"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Table exists, multiple users found (should still work)
+        self.mock_cursor.fetchone.side_effect = [[True], [2]]  # 2 users with same UUID
+        self.mock_cursor.rowcount = 2  # Two rows deleted
+        
+        # Act
+        result = DatabaseService._execute_delete_query(self.test_uuid)
+        
+        # Assert
+        assert result["success"] is True
+        assert result["deleted_rows"] == 2  # Should delete all matching rows
+
+    @patch('database.postgres.DatabaseService.get_database_connection')
+    def test_execute_delete_query_zero_rows_affected_but_user_exists(self, mock_get_conn):
+        """Test edge case where user exists but delete affects 0 rows"""
+        # Arrange
+        mock_get_conn.return_value = self.mock_connection
+        # Table exists, user exists, but somehow delete affects 0 rows
+        self.mock_cursor.fetchone.side_effect = [[True], [1]]
+        self.mock_cursor.rowcount = 0  # No rows actually deleted (edge case)
+        
+        # Act
+        result = DatabaseService._execute_delete_query(self.test_uuid)
+        
+        # Assert
+        assert result["success"] is True
+        assert result["deleted_rows"] == 0
+        assert result["uuid"] == self.test_uuid
+
+    def test_delete_user_data_empty_string_uuid(self):
+        """Test delete_user_data with empty string UUID"""
+        with pytest.raises(DatabaseServiceException) as exc_info:
+            DatabaseService.delete_user_data("")
+        
+        assert "User UUID is required for deletion" in str(exc_info.value)
+
+    def test_delete_user_data_whitespace_only_uuid(self):
+        """Test delete_user_data with whitespace-only UUID"""
+        with pytest.raises(DatabaseServiceException) as exc_info:
+            DatabaseService.delete_user_data("   ")
+        
+        # This should pass the empty check and reach the database level
+        # where it would be handled as a legitimate UUID (even if invalid)
+        # The actual behavior depends on implementation details
 
     """----------------------------------------------------------------------------------------------------------------------------"""
     """TESTS FOR CHILD FUNCTIONS"""
