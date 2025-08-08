@@ -1,23 +1,64 @@
 version: '3.8'
 
+networks:
+  chatgpt-network:
+    driver: bridge
+
 services:
   chatgpt-augmenter:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"  # React development server
-      - "5001:5001"  # Flask backend
+      - "3000:3000"  # React frontend
+      - "8000:8000"  # Flask backend
     environment:
       - FLASK_ENV=production
+      - FLASK_APP=app.py
       - PYTHONPATH=/app
+      # Database configuration using Docker internal gateway
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_NAME=test
+      - DB_USER=ayushpai
+      - DB_PASSWORD=pai2004
+      # React app API configuration
+      - REACT_APP_API_BASE_URL=http://localhost:8000
     volumes:
       # Mount data directory for persistent storage
       - ./backend/data:/app/backend/data
-      # Mount model directory for persistent storage (so setup doesn't run every time)
+      # Mount model directory for persistent storage
       - chatgpt_model_data:/app/backend/my_model_dir
+    networks:
+      - chatgpt-network
     restart: unless-stopped
     container_name: chatgpt-augmenter-app
+    depends_on:
+      - postgres-check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Service to check if external PostgreSQL is available
+  postgres-check:
+    image: postgres:15-alpine
+    command: >
+      sh -c "
+        echo 'Checking PostgreSQL connection to host.docker.internal:5432...'
+        until pg_isready -h host.docker.internal -p 5432 -U ${DB_USER:-postgres}; do
+          echo 'PostgreSQL is unavailable - sleeping'
+          sleep 2
+        done
+        echo 'PostgreSQL is up and running!'
+      "
+    environment:
+      - PGPASSWORD=${DB_PASSWORD:-password}
+    networks:
+      - chatgpt-network
+    restart: "no"
 
   # Optional: Development version with hot reload
   chatgpt-augmenter-dev:
@@ -26,14 +67,28 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "3001:3000"  # React frontend (dev)
-      - "5002:5000"  # Flask backend (dev)
+      - "8001:8000"  # Flask backend (dev)
     environment:
       - FLASK_ENV=development
+      - FLASK_APP=app.py
+      - PYTHONPATH=/app
       - CHOKIDAR_USEPOLLING=true
+      # Database configuration for development
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-chatgpt_augmenter}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      # React app API configuration for development
+      - REACT_APP_API_BASE_URL=http://localhost:8001
     volumes:
       - ./react-app:/app/react-app
       - ./backend:/app/backend
       - /app/react-app/node_modules
+      - ./backend/data:/app/backend/data
+      - chatgpt_model_data:/app/backend/my_model_dir
+    networks:
+      - chatgpt-network
     restart: unless-stopped
     container_name: chatgpt-augmenter-dev
     profiles:
@@ -42,3 +97,4 @@ services:
 # Named volumes for persistent storage
 volumes:
   chatgpt_model_data:
+    driver: local
