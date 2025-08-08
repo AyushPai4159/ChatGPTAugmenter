@@ -1,6 +1,7 @@
 import os
 import sys
-from database.postgres import DatabaseService, DatabaseServiceException
+import json
+from database.postgres import DatabaseService, DatabaseServiceException, TableNotFoundException, UserNotFoundException
 
 
 class DeleteServiceException(Exception):
@@ -14,7 +15,7 @@ class DeleteService:
     @staticmethod
     def delete_data_from_uuid(uuid):
         """
-        Delete user data from database using UUID
+        Delete user data from database using UUID, with fallback to JSON file deletion
         
         Args:
             uuid (str): User's UUID to delete
@@ -35,41 +36,45 @@ class DeleteService:
             
             uuid = uuid.strip()
             
-            # Attempt to delete from database
+            # Attempt to delete from database first
             try:
                 delete_result = DatabaseService.delete_user_data(uuid)
                 
-                # Check if any rows were actually deleted
-                if delete_result.get('deleted_rows', 0) == 0:
-                    return {
-                        "success": False,
-                        "message": f"No data found for UUID: {uuid}",
-                        "uuid": uuid,
-                        "deleted_rows": 0,
-                        "status": "not_found"
-                    }
-                
-                # Success case
                 return {
                     "success": True,
-                    "message": f"Successfully deleted data for UUID: {uuid}",
+                    "message": f"Successfully deleted data for UUID: {uuid} from database",
                     "uuid": uuid,
                     "deleted_rows": delete_result.get('deleted_rows', 0),
-                    "status": "deleted"
+                    "status": "deleted_from_database",
+                    "source": "database"
                 }
                 
+                
             except DatabaseServiceException as db_error:
-                # Handle database-specific errors
-                if "not found" in str(db_error).lower():
+                # Handle other database-specific errors
+                print(f"Database deletion failed")
+                print(f"Attempting JSON file deletion for UUID: {uuid}")
+                
+                json_result = DeleteService._delete_from_json_file(uuid)
+                
+                if json_result["success"]:
                     return {
-                        "success": False,
-                        "message": f"No data found for UUID: {uuid}",
+                        "success": True,
+                        "message": f"Successfully deleted data for UUID: {uuid} from JSON file",
                         "uuid": uuid,
-                        "deleted_rows": 0,
-                        "status": "not_found"
+                        "status": "deleted_from_json",
+                        "source": "json_file",
+                        "file_path": json_result.get("file_path")
                     }
                 else:
-                    raise DeleteServiceException(f"Database deletion failed: {str(db_error)}")
+                    return {
+                        "success": False,
+                        "message": f"No data found for UUID: {uuid} in database or JSON files",
+                        "uuid": uuid,
+                        "status": "not_found_anywhere",
+                        "database_error": str(db_error),
+                        "json_error": json_result.get("error")
+                    }
             
         except DeleteServiceException:
             # Re-raise delete service exceptions
@@ -79,77 +84,88 @@ class DeleteService:
             raise DeleteServiceException(f"Delete operation failed: {str(e)}")
     
     @staticmethod
-    def verify_deletion(uuid):
+    def _delete_from_json_file(uuid):
         """
-        Verify that user data has been successfully deleted
+        Delete user data from JSON file as fallback
         
         Args:
-            uuid (str): User's UUID to verify
+            uuid (str): User's UUID to delete
             
         Returns:
-            dict: Verification result
-            
-        Raises:
-            DeleteServiceException: If verification fails
+            dict: Result of JSON file deletion attempt
         """
         try:
-            if not uuid:
-                raise DeleteServiceException("UUID is required for verification")
+            # Construct the JSON file path
+            json_file_path = os.path.join(
+                os.path.dirname(__file__), 
+                '..', 
+                'data', 
+                'conversations',
+                f'{uuid}userData.json'
+            )
             
-            # Try to load the user data to see if it still exists
-            try:
-                DatabaseService.load_user_data_from_database(uuid)
-                # If we get here, data still exists
+            # Check if the JSON file exists
+            if not os.path.exists(json_file_path):
                 return {
-                    "verified": False,
-                    "message": f"Data still exists for UUID: {uuid}",
-                    "uuid": uuid,
-                    "status": "still_exists"
+                    "success": False,
+                    "error": f"JSON file not found: {json_file_path}",
+                    "file_path": json_file_path
                 }
-            except DatabaseServiceException as e:
-                if "not found" in str(e).lower():
-                    # Data not found means deletion was successful
-                    return {
-                        "verified": True,
-                        "message": f"Deletion verified - no data found for UUID: {uuid}",
-                        "uuid": uuid,
-                        "status": "deleted_verified"
-                    }
-                else:
-                    # Some other database error
-                    raise DeleteServiceException(f"Verification failed: {str(e)}")
-                    
-        except DeleteServiceException:
-            raise
-        except Exception as e:
-            raise DeleteServiceException(f"Deletion verification failed: {str(e)}")
-    
-    @staticmethod
-    def get_deletion_summary():
-        """
-        Get summary of deletion operations (useful for admin/monitoring)
-        
-        Returns:
-            dict: Summary of database state
             
-        Raises:
-            DeleteServiceException: If summary retrieval fails
-        """
-        try:
-            # Get current user count
-            user_count = DatabaseService.get_user_count()
+            # Verify it's actually a file (not a directory)
+            if not os.path.isfile(json_file_path):
+                return {
+                    "success": False,
+                    "error": f"Path exists but is not a file: {json_file_path}",
+                    "file_path": json_file_path
+                }
             
-            # Get database size
+            # Try to read and validate the JSON file before deletion
             try:
-                db_size = DatabaseService.get_database_size()
-            except:
-                db_size = "Unable to determine"
+                with open(json_file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    # Check if the UUID exists in the JSON file
+                    if uuid not in data:
+                        return {
+                            "success": False,
+                            "error": f"UUID {uuid} not found in JSON file",
+                            "file_path": json_file_path
+                        }
+            except json.JSONDecodeError:
+                return {
+                    "success": False,
+                    "error": f"Invalid JSON format in file: {json_file_path}",
+                    "file_path": json_file_path
+                }
+            except Exception as read_error:
+                return {
+                    "success": False,
+                    "error": f"Error reading JSON file: {str(read_error)}",
+                    "file_path": json_file_path
+                }
             
-            return {
-                "total_users": user_count,
-                "database_size": db_size,
-                "status": "active"
-            }
-            
+            # Delete the JSON file from the operating system
+            try:
+                os.remove(json_file_path)
+                print(f"✅ Successfully deleted JSON file: {json_file_path}")
+                
+                return {
+                    "success": True,
+                    "message": f"Successfully deleted JSON file for UUID: {uuid}",
+                    "file_path": json_file_path
+                }
+                
+            except OSError as delete_error:
+                return {
+                    "success": False,
+                    "error": f"Failed to delete JSON file: {str(delete_error)}",
+                    "file_path": json_file_path
+                }
+                
         except Exception as e:
-            raise DeleteServiceException(f"Failed to get deletion summary: {str(e)}")
+            return {
+                "success": False,
+                "error": f"Unexpected error during JSON file deletion: {str(e)}",
+                "file_path": json_file_path if 'json_file_path' in locals() else "unknown"
+            }
+

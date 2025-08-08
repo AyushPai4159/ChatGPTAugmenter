@@ -44,9 +44,10 @@ def load_model_and_data():
     try:
         # Load the sentence transformer model
         model_path = os.path.join(os.path.dirname(__file__), 'my_model_dir')
-        model = SentenceTransformer(model_path)
+        model = SentenceTransformer(model_path, device='cpu')
         
         print(f"🤖 Model: {model}")
+        print(f"🖥️  Model device: CPU (forced)")
         
     except Exception as e:
         print(f"❌ Error loading model and data: {e}")

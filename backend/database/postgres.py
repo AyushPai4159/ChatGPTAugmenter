@@ -14,6 +14,16 @@ class DatabaseServiceException(Exception):
     pass
 
 
+class TableNotFoundException(DatabaseServiceException):
+    """Exception raised when the users table doesn't exist"""
+    pass
+
+
+class UserNotFoundException(DatabaseServiceException):
+    """Exception raised when the specified user UUID doesn't exist in the table"""
+    pass
+
+
 class DatabaseService:
     """PostgreSQL database service for ChatGPT Augmenter"""
     
@@ -509,7 +519,9 @@ class DatabaseService:
             dict: Deletion result
             
         Raises:
-            DatabaseServiceException: If deletion fails
+            TableNotFoundException: If the users table doesn't exist
+            UserNotFoundException: If the specified user UUID doesn't exist
+            DatabaseServiceException: If deletion fails for other reasons
         """
         try:
             if not uuid:
@@ -517,6 +529,9 @@ class DatabaseService:
             
             return DatabaseService._execute_delete_query(uuid)
             
+        except (TableNotFoundException, UserNotFoundException):
+            # Re-raise specific exceptions without wrapping them
+            raise
         except Exception as e:
             if isinstance(e, DatabaseServiceException):
                 raise
@@ -532,6 +547,28 @@ class DatabaseService:
             conn = DatabaseService.get_database_connection()
             cur = conn.cursor()
             
+            # First check if the users table exists
+            table_check_query = """
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'users'
+            );
+            """
+            cur.execute(table_check_query)
+            table_exists = cur.fetchone()[0]
+            
+            if not table_exists:
+                raise TableNotFoundException(f"Table 'users' does not exist in the database")
+            
+            # Check if the user exists before attempting to delete
+            user_check_query = "SELECT COUNT(*) FROM users WHERE uuid = %s;"
+            cur.execute(user_check_query, (uuid,))
+            user_count = cur.fetchone()[0]
+            
+            if user_count == 0:
+                raise UserNotFoundException(f"User with UUID '{uuid}' not found in the users table")
+            
+            # Proceed with deletion if user exists
             delete_query = "DELETE FROM users WHERE uuid = %s;"
             cur.execute(delete_query, (uuid,))
             conn.commit()
@@ -542,6 +579,9 @@ class DatabaseService:
                 "uuid": uuid
             }
             
+        except (TableNotFoundException, UserNotFoundException):
+            # Re-raise our custom exceptions without wrapping them
+            raise
         except Exception as e:
             if conn:
                 conn.rollback()

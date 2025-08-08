@@ -166,6 +166,8 @@ class ExtractService:
         
         # Create embeddings
         embeddings = model.encode(texts, convert_to_tensor=True)
+        # Ensure embeddings are on CPU
+        embeddings = embeddings.cpu()
         
         return embeddings, texts
             
