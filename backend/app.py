@@ -186,7 +186,7 @@ def delete_user_data(uuid):
     try:
         
         # Use the delete service
-        delete_result = DeleteService.delete_data_from_uuid(uuid)
+        delete_result = DeleteService.delete_service(uuid)
         return jsonify(delete_result)
         
     except DeleteServiceException as e:
