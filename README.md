@@ -57,7 +57,7 @@ A React web application that provides semantic search capabilities over your Cha
 
 
    **Video Alternative Instructions:**
-   - **Windows**: https://www.youtube.com/watch?app=desktop&vx=GpqJzWCcQXY
+   - **Windows**: https://www.youtube.com/watch?v=GpqJzWCcQXY
    - **macOS**: https://www.youtube.com/watch?v=PShGF_udSpk
    - **Linux (Ubuntu)**: https://www.youtube.com/watch?v=tducLYZzElo
 
