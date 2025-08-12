@@ -36,4 +36,4 @@ echo "📱 Open your browser and go to: http://localhost:5001"
 echo "⏹️  Press Ctrl+C to stop the server"
 echo ""
 
-gunicorn app:app
+gunicorn -b 0.0.0.0:5001 app:app

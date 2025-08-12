@@ -8,6 +8,7 @@ const FileUpload = ({ userUUID }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [enableDelete, setEnableDelete] = useState(false);
+  const [hasUploadedData, setHasUploadedData] = useState(false); // Track if data has been uploaded
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -67,6 +68,7 @@ const FileUpload = ({ userUUID }) => {
       setIsUploading(false);
       setUploadStatus('success');
       setEnableDelete(true); // Enable delete button after successful upload
+      setHasUploadedData(true); // Mark that data has been successfully uploaded
       
     } catch (error) {
       console.error("Upload error:", error);
@@ -124,6 +126,7 @@ const FileUpload = ({ userUUID }) => {
       setIsUploading(false);
       setUploadStatus('deleted');
       setEnableDelete(false); // Disable delete button after successful deletion
+      setHasUploadedData(false); // Reset upload state after successful deletion
       
       // Reset file selection after successful deletion
       setSelectedFile(null);
@@ -152,6 +155,7 @@ const FileUpload = ({ userUUID }) => {
     setSelectedFile(null);
     setUploadStatus('');
     setEnableDelete(false); // Reset delete state
+    // Note: Don't reset hasUploadedData here as this is just clearing the UI, not deleting data
     // Reset the file input
     const fileInput = document.getElementById('file-input');
     if (fileInput) {
@@ -177,10 +181,15 @@ const FileUpload = ({ userUUID }) => {
               accept=".json,application/json"
               onChange={handleFileSelect}
               className="file-input"
-              disabled={isUploading}
+              disabled={isUploading || hasUploadedData}
             />
-            <label htmlFor="file-input" className="file-input-label">
-              {selectedFile ? selectedFile.name : 'Choose conversations.json file'}
+            <label 
+              htmlFor="file-input" 
+              className={`file-input-label ${hasUploadedData ? 'disabled' : ''}`}
+              title={hasUploadedData ? 'File selection disabled. Delete existing data first to upload new files.' : ''}
+            >
+              {hasUploadedData ? '✅ Data Already Uploaded' : 
+               selectedFile ? selectedFile.name : 'Choose conversations.json file'}
             </label>
           </div>
 
@@ -198,10 +207,11 @@ const FileUpload = ({ userUUID }) => {
           <div className="upload-buttons">
             <button
               onClick={handleUpload}
-              disabled={!selectedFile || isUploading}
-              className={`upload-btn ${uploadStatus}`}
+              disabled={!selectedFile || isUploading || hasUploadedData}
+              className={`upload-btn ${uploadStatus} ${hasUploadedData ? 'disabled' : ''}`}
+              title={hasUploadedData ? 'Data already uploaded. Delete existing data first to upload new data.' : ''}
             >
-              {isUploading ? '⏳ Processing...' : '🚀 Upload & Process'}
+              {isUploading ? '⏳ Processing...' : hasUploadedData ? '✅ Data Uploaded' : '🚀 Upload & Process'}
             </button>
 
             {selectedFile && (
@@ -218,10 +228,10 @@ const FileUpload = ({ userUUID }) => {
           {uploadStatus && (
             <div className={`upload-status ${uploadStatus}`}>
               {uploadStatus === 'uploading' && '⏳ Uploading and processing your conversations...'}
-              {uploadStatus === 'success' && '✅ Upload completed successfully!'}
+              {uploadStatus === 'success' && '✅ Upload completed successfully! Delete existing data to upload new files.'}
               {uploadStatus === 'error' && '❌ Upload failed. Please try again.'}
               {uploadStatus === 'deleting' && '🗑️ Deleting your data from the database...'}
-              {uploadStatus === 'deleted' && '✅ All your data has been successfully deleted!'}
+              {uploadStatus === 'deleted' && '✅ All your data has been successfully deleted! You can now upload new data.'}
               {uploadStatus === 'delete-error' && '❌ Delete failed. Please try again.'}
             </div>
           )}
@@ -236,6 +246,11 @@ const FileUpload = ({ userUUID }) => {
             <li>Download and extract the file named "conversations.json"</li>
             <li>Upload that file here</li>
           </ol>
+          
+          <div className="upload-note">
+            <p><strong>📝 Note:</strong> After a successful upload, both file selection and upload buttons will be disabled to prevent duplicate data. 
+            You must delete your existing data first before selecting and uploading new conversations.</p>
+          </div>
         </div>
       </div>
     </div>
