@@ -105,7 +105,7 @@ A React web application that provides semantic search capabilities over your Cha
    - Extract the `conversations.json` file from your exported data
    - Copy `conversations.json` to the `/backend/data/` directory
 
-5. **Run Initial Setup**
+5. **Run Initial Backend Setup**
    ```bash
    sh backend.sh
    ```
@@ -133,13 +133,12 @@ For subsequent runs after the initial setup:
 
 1. **Start Backend Server**
    ```bash
-   ./run.sh
+   sh backend.sh
    ```
 
 2. **Start React Application**
    ```bash
-   cd react-app
-   npm start
+   sh frontend.sh
    ```
 
 The backend server will run on `http://localhost:5001` and the React app on `http://localhost:3000`.
@@ -179,8 +178,8 @@ The backend server will run on `http://localhost:5001` and the React app on `htt
 ```
 ChatGPTAugmenter/
 ├── README.md
-├── startup.sh          # First-time setup script
-├── run.sh             # Daily startup script
+├── frontend.sh          # frontend startup script
+├── backend.sh          # backend startup script
 ├── backend/           # Flask API server
 │   ├── app.py         # Main Flask application
 │   ├── requirements.txt # Python dependencies (includes psycopg2)
@@ -207,7 +206,6 @@ ChatGPTAugmenter/
 │   │   │   └── SearchResults.js # Results display
 │   │   └── ...        # Other React files
 │   └── README.md      # React-specific documentation
-└── frontend/          # Legacy browser extension (deprecated)
 ```
 
 ## Troubleshooting
