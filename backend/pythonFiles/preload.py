@@ -5,7 +5,7 @@ import json
 
 
 
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')  # or your fine-tuned model
+model = SentenceTransformer('paraphrase-MiniLM-L6-v2', device='cpu')  # Force CPU usage
 
 
 

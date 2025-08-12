@@ -38,9 +38,6 @@ function App() {
         <div className="header">
           <h1>🤖 ChatGPT Augmenter React App</h1>
           <p className="subtitle">Monitor your text input and search through documents</p>
-          {userUUID && (
-            <p className="user-id">User ID: {userUUID}</p>
-          )}
         </div>
         
         <FileUpload userUUID={userUUID} />

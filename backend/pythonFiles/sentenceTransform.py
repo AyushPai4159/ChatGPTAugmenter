@@ -20,6 +20,8 @@ doc_embeddings = np.load("../data/doc_embeddings.npy")
 # Query
 query = input("What do you want to search: ")
 query_embedding = model.encode(query, convert_to_tensor=True)
+# Ensure query embedding is on CPU
+query_embedding = query_embedding.cpu()
 
 # Find similarity
 cos_scores = util.pytorch_cos_sim(query_embedding, doc_embeddings)

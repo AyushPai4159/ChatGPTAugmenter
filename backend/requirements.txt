@@ -4,3 +4,6 @@ sentence-transformers
 numpy
 torch
 transformers
+psycopg[binary]
+python-dotenv
+gunicorn

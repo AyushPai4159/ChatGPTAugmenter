@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import config from '../config';
 import './InputMonitor.css';
 
 const InputMonitor = ({ 
@@ -37,7 +38,7 @@ const InputMonitor = ({
 
   const integrateBackend = async () => {
     try {
-      const response = await axios.post('/search', {
+      const response = await axios.post(`${config.API_BASE_URL}/search`, {
         query: currentInputText.trim(),
         uuid: userUUID
       });
@@ -55,7 +56,7 @@ const InputMonitor = ({
       if (error.response?.data?.error) {
         errorMessage += error.response.data.error;
       } else if (error.message.includes('Network Error') || error.code === 'ERR_NETWORK') {
-        errorMessage += 'Make sure your Flask server is running on localhost:5000';
+        errorMessage += `Make sure your Flask server is running on ${config.API_BASE_URL}`;
       } else if (error.message) {
         errorMessage += error.message;
       } else {
