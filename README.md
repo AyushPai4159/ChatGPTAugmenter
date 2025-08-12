@@ -5,7 +5,7 @@ A web application that provides semantic search capabilities over your ChatGPT c
 ## Version 0.8 Features
 
 - **Semantic Search**: Search through your ChatGPT conversations using advanced sentence transformers
-- **Modern Web Interface**: Clean, responsive React-based user interface with enhanced UX
+- **Modern Web Interface**: Clean, responsive React-based user interface with enhanced UI/UX
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Fast semantic search with similarity scoring
 - **🗑️ Delete Functionality**: New delete button to remove uploaded data after processing

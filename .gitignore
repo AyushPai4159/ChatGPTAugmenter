@@ -14,4 +14,4 @@
 /react-app/.env
 .vscode
 loadEnv.sh
-gitDo.sh
+gitAll.sh
