@@ -1,6 +1,6 @@
 # ChatGPT Augmenter - Developer App 0.8
 
-A React web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
+A web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
 ## Version 0.8 Features
 
