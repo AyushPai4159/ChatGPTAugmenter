@@ -178,7 +178,7 @@ The backend server will run on `http://localhost:5001` and the React app on `htt
 ```
 ChatGPTAugmenter/
 ├── README.md
-├── frontend.sh          # frontend startup script
+├── frontend.sh         # frontend startup script
 ├── backend.sh          # backend startup script
 ├── backend/           # Flask API server
 │   ├── app.py         # Main Flask application
