@@ -6,7 +6,7 @@ echo "================================="
 # Remove existing virtual environment if it exists
 if [ -d "venv" ]; then
     echo "🗑️ Removing existing virtual environment..."
-    rm -rf venv
+    rm -rf venv`
 fi
 
 # Create fresh virtual environment

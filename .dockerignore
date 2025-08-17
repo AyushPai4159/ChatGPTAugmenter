@@ -2,15 +2,39 @@
 node_modules/
 npm-debug.log*
 
-# Python cache
+# Exclude virtual environments and caches (LARGEST SPACE SAVERS)
+venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*/__pycache__/
+*/*/__pycache__/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
 .Python
 env/
-venv/
 .venv/
+
+# Exclude model directory (will be created during build)
+my_model_dir/
+
+# Exclude test files and documentation (MEDIUM SPACE SAVERS)
+tests/
+README_FLASK.md
+INSTALLATION_GUIDE.md
+*.md
+
+# Exclude shell scripts and setup files
+bashFiles/
+setup.sh
+run*.sh
+
+# Exclude data files (will be mounted as volumes)
+data/conversations/*
+
+# Dependencies
+node_modules/
+npm-debug.log*
 
 # Build outputs
 react-app/build/
