@@ -15,4 +15,4 @@ model = SentenceTransformer('paraphrase-MiniLM-L6-v2', device='cpu')  # Force CP
 
 
 # Save entire model to local directory
-model.save('../my_model_dir')
+model.save('my_model_dir')
