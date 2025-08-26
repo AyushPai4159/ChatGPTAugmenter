@@ -103,7 +103,7 @@ A web application that provides semantic search capabilities over your ChatGPT c
 4. **Prepare Your Data**
    - Go to ChatGPT and export your data (Settings > Data Export)
    - Extract the `conversations.json` file from your exported data
-   - Copy `conversations.json` to the `/backend/data/` directory
+   - You can now upload `conversations.json` directly through the web interface
 
 5. **Run Initial Backend Setup**
    ```bash
