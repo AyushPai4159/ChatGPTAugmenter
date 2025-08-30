@@ -4,18 +4,21 @@ A web application that provides semantic search capabilities over your ChatGPT c
 
 ## Version 0.8 Features
 
+**Core Features:**
 - **Semantic Search**: Search through your ChatGPT conversations using advanced sentence transformers
 - **Modern Web Interface**: Clean, responsive React-based user interface with enhanced UI/UX
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Intuitive semantic search with similarity scoring
-- **🗑️ Delete Functionality**: New delete button to remove uploaded data after processing
+
+**🆕 New in Version 0.8:**
+- **🗑️ Delete Functionality**: Delete button to remove uploaded data after processing
 - **🗄️ PostgreSQL Integration**: Robust database storage with automatic JSON file fallback
 - **🔄 Hybrid Storage**: Seamless switching between PostgreSQL and JSON storage based on availability
-- **📊 Data Management**: Enhanced data upload, processing, and deletion capabilities
+- **📊 Enhanced Data Management**: Improved upload, processing, and deletion capabilities
 
 ## System Requirements
 
-- Python 3.10 or higher
+- Python 3.7 or higher
 - Node.js and npm (required for React app)
 - PostgreSQL 12+ (recommended) or fallback to JSON file storage
 - Modern web browser (Chrome, Firefox, Safari, Edge)
@@ -23,6 +26,7 @@ A web application that provides semantic search capabilities over your ChatGPT c
 - Additional storage for conversation embeddings (varies by data size)
 
 ## Installation & Setup
+
 
 ### First Time Setup
 
@@ -33,28 +37,25 @@ A web application that provides semantic search capabilities over your ChatGPT c
    ```
 
 2. **Database Setup (Recommended but not Mandatory given JSON Filesystem Backup)**
-   
+
    **Install PostgreSQL for your platform:**
    - **macOS**: https://www.postgresql.org/download/macosx/
    - **Windows**: https://www.postgresql.org/download/windows/
    - **Linux (Ubuntu)**: https://www.postgresql.org/download/linux/ubuntu/
    - **Linux (Other)**: https://www.postgresql.org/download/linux/
-   
-   
-   
+
    **After installation, create the database:**
    ```bash
    # Create database (works on all platforms after PostgreSQL installation)
    createdb chatgpt_augmenter
-   
+
    # Alternative using psql console:
    psql -U postgres
    CREATE DATABASE chatgpt_augmenter;
    \q
    ```
-   
-   *Note: If PostgreSQL is not available, the application will automatically fall back to JSON file storage on your local filesytem.*
 
+   *Note: If PostgreSQL is not available, the application will automatically fall back to JSON file storage on your local filesystem.*
 
    **Video Alternative Instructions:**
    - **Windows**: https://www.youtube.com/watch?v=GpqJzWCcQXY
@@ -62,70 +63,68 @@ A web application that provides semantic search capabilities over your ChatGPT c
    - **Linux (Ubuntu)**: https://www.youtube.com/watch?v=tducLYZzElo
 
 3. **Environment Configuration**
-   
-   **Frontend Environment Setup:**
-   ```bash
-   cd react-app
-   ```
-   Create or verify the `.env` file with the correct backend URL:
-   ```properties
-   # react-app/.env
-   REACT_APP_API_BASE_URL=http://localhost:5001
-   ```
-   
-   **Backend Database Configuration:**
-   ```bash
-   cd backend/database
-   ```
-   Copy the example environment file and configure your database connection:
-   ```bash
-   # Copy the example file
-   cp .env.example .env
-   ```
-   
-   Edit `backend/database/.env` with your PostgreSQL credentials:
-   ```properties
-   # backend/database/.env
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=chatgpt_augmenter
-   DB_USER=your_postgres_username
-   DB_PASSWORD=your_postgres_password
-   ```
-   
-   **Default Database Settings:**
-   - If using default PostgreSQL installation, `DB_USER` is typically `postgres`
-   - Create the database name to match `DB_NAME` (e.g., `chatgpt_augmenter`)
-   - Set `DB_PASSWORD` to what you configured during PostgreSQL installation
-   
-   *Note: The application will automatically detect these settings and fall back to JSON storage if the database connection fails.*
+
+    **Frontend Environment Setup:**
+    - Go to the `react-app` directory:
+       ```bash
+       cd react-app
+       ```
+    - Create or edit the `.env` file with the correct backend URL:
+       ```properties
+       # react-app/.env
+       REACT_APP_API_BASE_URL=http://localhost:8080
+       ```
+
+    **Backend Database Configuration (Again optional depending if you want to use a database):**
+    - Go to the backend database directory:
+       ```bash
+       cd backend/database
+       ```
+    - Copy the example environment file and configure your database connection:
+       ```bash
+       cp .env.example .env
+       ```
+    - Edit `backend/database/.env` with your PostgreSQL credentials:
+       ```properties
+       # backend/database/.env
+       DB_HOST=localhost
+       DB_PORT=5432
+       DB_NAME=chatgpt_augmenter
+       DB_USER=your_postgres_username
+       DB_PASSWORD=your_postgres_password
+       ```
+    - If using default PostgreSQL installation, `DB_USER` is typically `postgres`.
+    - Make sure the database name matches `DB_NAME` (e.g., `chatgpt_augmenter`).
+    - Set `DB_PASSWORD` to what you configured during PostgreSQL installation.
+
+    *Note: The application will automatically detect these settings and fall back to JSON storage if the database connection fails.*
 
 4. **Prepare Your Data**
    - Go to ChatGPT and export your data (Settings > Data Export)
    - Extract the `conversations.json` file from your exported data
-   - Copy `conversations.json` to the `/backend/data/` directory
+   - You can now upload `conversations.json` directly through the web interface
 
 5. **Run Initial Backend Setup**
    ```bash
-   sh backend.sh
+   python setupBackend.py
    ```
    This will:
    - Install Python dependencies (including PostgreSQL drivers)
    - Download and setup the Sentence Transformer model (~80MB)
-   - Configure database connection (PostgreSQL or JSON fallback)
    - Process your conversations and create embeddings
-   - Start the Flask backend server
 
 6. **Setup React Web Application**
    ```bash
-   cd react-app
-   npm install
-   npm start
+   python setupFrontend.py
    ```
    This will:
    - Install all Node.js dependencies
-   - Start the React development server
-   - Open the application in your browser at `http://localhost:3000`
+   - Prepare the React development environment
+   - You can then run the React app with:
+     ```bash
+     python runFrontend.py
+     ```
+   - The application will open in your browser at `http://localhost:3000`
 
 ### Daily Usage
 
@@ -133,21 +132,22 @@ For subsequent runs after the initial setup:
 
 1. **Start Backend Server**
    ```bash
-   sh backend.sh
+   python runBackend.py
    ```
 
 2. **Start React Application**
    ```bash
-   sh frontend.sh
+   python runFrontend.py
    ```
 
-The backend server will run on `http://localhost:5001` and the React app on `http://localhost:3000`.
+The backend server will run on `http://localhost:8080` and the React app on `http://localhost:3000`.
 
 ## How to Use
 
+
 1. **Start the Application**
-   - Run `./run.sh` to start the backend server
-   - Navigate to the `react-app` directory and run `npm start`
+   - Run `python runBackend.py` to start the backend server
+   - Run `python runFrontend.py` to start the React app
    - The web app will open at `http://localhost:3000`
 
 2. **Upload and Manage Your Data**
@@ -178,41 +178,40 @@ The backend server will run on `http://localhost:5001` and the React app on `htt
 ```
 ChatGPTAugmenter/
 ├── README.md
-├── frontend.sh         # frontend startup script
-├── backend.sh          # backend startup script
-├── backend/           # Flask API server
-│   ├── app.py         # Main Flask application
+├── setupBackend.py      # Backend setup script (Python dependencies, ML model)
+├── setupFrontend.py     # Frontend setup script (npm install)
+├── runBackend.py        # Start Flask server from root
+├── runFrontend.py       # Start React app from root
+├── Dockerfile           # Dockerfile for deployment
+├── backend/             # Flask API server
+│   ├── app.py           # Main Flask application
 │   ├── requirements.txt # Python dependencies (includes psycopg2)
-│   ├── database/      # Database configuration and models
-│   │   ├── postgres.py # PostgreSQL connection and operations
-│   │   ├── .env       # Database credentials (create from .env.example)
-│   │   └── .env.example # Template for database configuration
-│   ├── data/          # Your conversation data
-│   │   └── conversations.json  # (You need to add this)
-│   ├── pythonFiles/   # Data processing scripts
-│   │   ├── sentenceTransform.py # ML embeddings
-│   │   └── preload.py # Database initialization
-│   └── routes/        # API endpoints
-│       ├── extract.py # Data extraction with delete functionality
-│       └── search.py  # Semantic search operations
-├── react-app/         # React web application (main app)
-│   ├── package.json   # Node.js dependencies
-│   ├── .env          # Frontend environment (API URL configuration)
-│   ├── public/        # Static assets
-│   ├── src/           # React source code
-│   │   ├── App.js     # Main React component
-│   │   ├── components/ # UI components
-│   │   │   ├── FileUpload.js # Enhanced upload with delete
-│   │   │   └── SearchResults.js # Results display
-│   │   └── ...        # Other React files
-│   └── README.md      # React-specific documentation
+│   ├── database/        # Database configuration and models
+│   │   ├── postgres.py      # PostgreSQL connection and operations
+│   │   ├── .env             # Database credentials (create from .env.example)
+│   │   └── .env.example     # Template for database configuration
+│   ├── data/            # Internal backend data
+│   ├── pythonFiles/     # Data processing scripts
+│   │   ├── createVenv.py    # Virtual environment creation
+│   │   └── preload.py       # Model initialization
+│   ├── routes/          # API endpoints
+│   │   ├── extract.py       # Data extraction with delete functionality
+│   │   ├── search.py        # Semantic search operations
+│   │   ├── health.py        # Health check endpoint
+│   │   └── delete.py        # Data deletion endpoint
+│   ├── tests/           # Backend unit tests
+│   │   ├── test_delete.py   # Test for delete functionality
+│   │   ├── test_extract.py  # Test for extract functionality
+│   │   ├── test_postgres.py # Test for PostgreSQL integration
+│   │   └── test_search.py   # Test for search functionality
+│   
 ```
 
 ## Troubleshooting
 
 - **React app not starting**: Make sure Node.js and npm are installed, and run `npm install` in the `react-app` directory
 - **No search results**: Ensure `conversations.json` is in the correct location and `startup.sh` ran successfully
-- **Server errors**: Check that the Flask server is running on `http://localhost:5001`
+- **Server errors**: Check that the Flask server is running on `http://localhost:8080`
 - **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`
 - **Model download issues**: The setup script will download ~80MB for the Sentence Transformer model
 - **Database connection issues**: 
@@ -225,7 +224,7 @@ ChatGPTAugmenter/
   - **Environment Configuration**: Ensure `backend/database/.env` has correct credentials
   - **Connection Test**: Check that database name matches between `.env` and actual database
 - **Frontend connection issues**: 
-  - Verify `react-app/.env` has correct `REACT_APP_API_BASE_URL=http://localhost:5001`
+  - Verify `react-app/.env` has correct `REACT_APP_API_BASE_URL=http://localhost:8080`
   - Ensure backend is running on the same port specified in the React environment file
 - **Environment file missing**: Copy `backend/database/.env.example` to `backend/database/.env` and configure
 - **Delete functionality not working**: Ensure proper database permissions and check server logs
@@ -265,59 +264,6 @@ ChatGPTAugmenter/
 - **Error handling**: Comprehensive error messages and recovery suggestions
 - **Performance monitoring**: Query timing and optimization metrics
 
-## Development
-
-To modify or extend the application:
-
-1. **Backend changes**: Edit files in `/backend/` 
-2. **React app changes**: Edit files in `/react-app/src/`
-3. **Adding new components**: Create new files in `/react-app/src/components/`
-4. **Styling**: Modify CSS files in `/react-app/src/`
-5. **Database operations**: Modify `/backend/database/postgres.py` for PostgreSQL features
-6. **API endpoints**: Add new routes in `/backend/routes/` directory
-7. **Data processing**: Enhance `/backend/pythonFiles/` for improved ML operations
-
-### Development Environment Setup
-
-**Unix/macOS/Linux:**
-```bash
-# Backend development
-cd backend
-pip install -r requirements.txt
-flask run --debug
-
-# Frontend development  
-cd react-app
-npm install
-npm start
-
-# Database development
-createdb chatgpt_augmenter_dev
-psql chatgpt_augmenter_dev
-```
-
-**Windows:**
-```powershell
-# Backend development
-cd backend
-pip install -r requirements.txt
-set FLASK_ENV=development
-flask run --debug
-
-# Frontend development  
-cd react-app
-npm install
-npm start
-
-# Database development (Command Prompt as Administrator)
-createdb chatgpt_augmenter_dev
-psql -U postgres chatgpt_augmenter_dev
-
-# Alternative using psql directly
-psql -U postgres
-CREATE DATABASE chatgpt_augmenter_dev;
-\c chatgpt_augmenter_dev
-```
 
 ## Support
 
