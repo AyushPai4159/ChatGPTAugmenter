@@ -52,7 +52,7 @@ A React web application that provides semantic search capabilities over your Cha
 
 ### Daily Usage
 
-**Python Convenience Scripts (Recommended)**
+**Python Convenience Scripts**
 ```bash
 # Start backend server
 python runBackend.py
