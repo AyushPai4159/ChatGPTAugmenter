@@ -186,6 +186,4 @@ To modify or extend the application:
 
 **Quick Start**: Run `python setupBackend.py` and `python setupFrontend.py` for first-time setup, then use `python runBackend.py` and `python runFrontend.py` for daily usage.
 
-**Data Location**: Place your `conversations.json` file in the `uploadData/` directory in the root of the project.
-
 **Requirements**: The Sentence Transformer model requires an internet connection for the initial download (~80MB).
