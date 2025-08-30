@@ -35,7 +35,7 @@ def main():
     print(f"📂 Running Flask server from: {backend_flask_path}")
     print("🔄 Starting Flask application...\n")
     print("📝 Note: Use Ctrl+C to stop the server")
-    print("🌐 The server will be available at http://localhost:5000\n")
+    print("🌐 The server will be available at http://localhost:8080\n")
     
     try:
         # Run the backend run_flask.py script

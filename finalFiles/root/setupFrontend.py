@@ -40,6 +40,25 @@ def main():
         print("Please ensure the react-app directory contains a valid package.json")
         sys.exit(1)
     
+    installNode = True
+    # Check if node_modules already exists
+    node_modules_path = react_app_path / "node_modules"
+    if node_modules_path.exists():
+        installNode = False
+        print("📦 node_modules directory already exists!")
+        print(f"📁 Location: {node_modules_path}")
+        print("🔍 Checking if dependencies are up to date...")
+        
+        # Check if package-lock.json exists (indicates previous npm install)
+        package_lock_path = react_app_path / "package-lock.json"
+        if package_lock_path.exists():
+            print("✅ Dependencies appear to be installed (package-lock.json found)")
+            print("🔄 Running npm install to ensure dependencies are current...")
+        else:
+            print("⚠️  No package-lock.json found, running npm install to ensure proper setup...")
+    else:
+        print("📦 node_modules not found, will install fresh dependencies")
+    
     print(f"📂 Installing dependencies in: {react_app_path}")
     print("🔄 Running npm install...\n")
     
@@ -60,7 +79,8 @@ def main():
         print(f"📦 Using npm version: {npm_check.stdout.strip()}")
         
         # Run npm install in the react-app directory
-        result = subprocess.run(
+        if(installNode):
+            result = subprocess.run(
             ["npm", "install"],
             cwd=react_app_path,
             check=True

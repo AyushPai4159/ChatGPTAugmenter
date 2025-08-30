@@ -73,9 +73,10 @@ def main():
     # Define paths to remove (equivalent to the bash script)
     items_to_remove = [
         # Remove model directory (equivalent to rm -R ../my_model_dir)
-        ("directory", current_dir / "../my_model_dir"),
+        ("directory", current_dir / "my_model_dir"),
+        ("directory", current_dir / "venv"),
         # Remove output files (equivalent to rm ../data/output.json and rm ../data/doc_embeddings.npy)
-        ("file", current_dir / "../data/userData.json")
+        ("file", current_dir / "data/userData.json")
     ]
     
     success_count = 0
@@ -107,6 +108,7 @@ if __name__ == "__main__":
     # Add confirmation prompt for safety
     print("This will delete the following items:")
     print("- ../my_model_dir/ (entire directory)")
+    print("- ../venv/ (entire directory)")
     print("- ../data/userData.json")
     print()
     
