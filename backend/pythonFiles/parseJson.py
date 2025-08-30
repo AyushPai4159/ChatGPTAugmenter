@@ -3,8 +3,24 @@ import json
 # Open and read the file
 def exportData():
     docs: dict = {}
-    with open("../data/conversations.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open("../../uploadData/conversations.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except OSError as e:
+        print("❌ Error: Could not open conversations.json file")
+        print("📁 Please make sure to upload your conversations.json file to the uploadData/ directory in the root")
+        print("💡 Steps to fix this:")
+        print("   1. Export your ChatGPT conversations from https://chat.openai.com/")
+        print("   2. Extract the conversations.json file from the downloaded archive")
+        print("   3. Create an 'uploadData' directory in the root of the project")
+        print("   4. Place conversations.json in the uploadData/ directory")
+        print(f"🔍 Technical details: {e}")
+        raise SystemExit(1)
+    except json.JSONDecodeError as e:
+        print("❌ Error: conversations.json file is not valid JSON")
+        print("🔧 Please ensure the file is a valid ChatGPT export")
+        print(f"🔍 Technical details: {e}")
+        raise SystemExit(1)
 
     # Now `data` is a Python object (usually a list or dict)
 
