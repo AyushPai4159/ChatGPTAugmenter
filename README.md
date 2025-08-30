@@ -103,8 +103,6 @@ ChatGPTAugmenter/
 ├── runFrontend.py     # Start React app from root
 ├── uploadData/        # User data directory
 │   └── conversations.json  # (You need to add this)
-├── startup.sh         # Legacy first-time setup script
-├── run.sh            # Legacy daily startup script
 ├── backend/          # Flask API server
 │   ├── app.py        # Main Flask application
 │   ├── requirements.txt
@@ -113,7 +111,6 @@ ChatGPTAugmenter/
 │   ├── data/         # Internal backend data
 │   ├── pythonFiles/  # Data processing scripts
 │   ├── routes/       # API endpoints
-│   └── database/     # Database utilities
 └── react-app/        # React web application
     ├── package.json  # Node.js dependencies
     ├── public/       # Static assets
