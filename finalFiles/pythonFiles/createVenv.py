@@ -56,7 +56,7 @@ def create_virtual_environment():
     
     # Get the backend directory (parent of pythonFiles)
     backend_dir = Path(__file__).parent.parent
-    venv_dir = backend_dir / "venv"
+    venv_dir =  "venv"
     requirements_file = backend_dir / "requirements.txt"
     
     print(f"📂 Backend directory: {backend_dir}")

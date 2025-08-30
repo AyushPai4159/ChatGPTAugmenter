@@ -59,8 +59,8 @@ def main():
     
     # Define the scripts to run in sequence
     scripts = [
-        ("Cleanup (delete.py)", current_dir / "delete.py"),
-        ("Data Loading (load.py)", current_dir / "load.py")
+        ("Cleanup (delete.py)",  "delete.py"),
+        ("Data Loading (load.py)", "load.py")
     ]
     
     # Run each script in sequence
@@ -85,10 +85,12 @@ if __name__ == "__main__":
     print()
     print("Files that will be deleted:")
     print("- my_model_dir/ (entire directory)")
-    print("- data/userData.json") 
+    print("- venv/ (entire directory)")
+    print("- data/conversations") 
     print()
     print("Then the following will be regenerated:")
     print("- Download ML model (preload.py)")
+    print("Create virtual environment (createVenv.py)")
     print()
     
     response = input("Are you sure you want to continue? (y/N): ").strip().lower()

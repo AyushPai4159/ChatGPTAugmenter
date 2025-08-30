@@ -73,10 +73,10 @@ def main():
     # Define paths to remove (equivalent to the bash script)
     items_to_remove = [
         # Remove model directory (equivalent to rm -R ../my_model_dir)
-        ("directory", current_dir / "my_model_dir"),
-        ("directory", current_dir / "venv"),
+        ("directory",  "my_model_dir"),
+        ("directory",  "venv"),
         # Remove output files (equivalent to rm ../data/output.json and rm ../data/doc_embeddings.npy)
-        ("directory", current_dir / "data/conversationData")
+        ("directory",  "data/conversationData")
     ]
     
     success_count = 0

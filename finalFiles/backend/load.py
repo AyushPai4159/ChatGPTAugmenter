@@ -62,7 +62,7 @@ def main():
     current_dir = Path(__file__).parent
     
     # Navigate to pythonFiles directory (equivalent to cd .. && cd pythonFiles)
-    python_files_dir = current_dir / "pythonFiles"
+    python_files_dir =  "pythonFiles"
     
     if not python_files_dir.exists():
         print(f"✗ Error: pythonFiles directory not found at {python_files_dir}")
