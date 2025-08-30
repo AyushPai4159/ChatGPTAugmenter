@@ -93,34 +93,52 @@ The backend server will run on `http://localhost:8080` and the React app on `htt
 
 ## Project Structure
 
+
 ```
 ChatGPTAugmenter/
 ├── README.md
-├── setupBackend.py    # Backend setup script (Python dependencies, ML model)
-├── setupFrontend.py   # Frontend setup script (npm install)
-├── runBackend.py      # Start Flask server from root
-├── runFrontend.py     # Start React app from root
-├── uploadData/        # User data directory
-│   └── conversations.json  # (You need to add this)
-├── startup.sh         # Legacy first-time setup script
-├── run.sh            # Legacy daily startup script
-├── backend/          # Flask API server
-│   ├── app.py        # Main Flask application
-│   ├── requirements.txt
-│   ├── setup.py      # Backend setup automation
-│   ├── run_flask.py  # Flask server runner
-│   ├── data/         # Internal backend data
-│   ├── pythonFiles/  # Data processing scripts
-│   ├── routes/       # API endpoints
-│   └── database/     # Database utilities
-└── react-app/        # React web application
-    ├── package.json  # Node.js dependencies
-    ├── public/       # Static assets
-    ├── src/          # React source code
-    │   ├── App.js    # Main React component
-    │   ├── components/ # UI components
-    │   └── ...       # Other React files
-    └── README.md     # React-specific documentation
+├── setupBackend.py      # Backend setup script (Python dependencies, ML model)
+├── setupFrontend.py     # Frontend setup script (npm install)
+├── runBackend.py        # Start Flask server from root
+├── runFrontend.py       # Start React app from root
+├── backend/             # Flask API server
+│   ├── app.py           # Main Flask application
+│   ├── requirements.txt # Python dependencies
+│   ├── data/            # Internal backend data
+│   │   └── dummy.txt    # Example data file
+│   ├── database/        # Database configuration and models
+│   ├── pythonFiles/     # Data processing scripts
+│   │   ├── createVenv.py    # Virtual environment creation
+│   │   └── preload.py       # Model initialization
+│   ├── routes/          # API endpoints
+│   │   ├── extract.py       # Data extraction
+│   │   ├── health.py        # Health check endpoint
+│   │   └── search.py        # Semantic search operations
+│   ├── delete.py        # Data deletion script
+│   ├── load.py          # Data loading script
+│   ├── setup.py         # Backend setup automation
+│   ├── run_flask.py     # Flask server runner
+│   ├── my_model_dir/    # Model directory
+│   └── venv/            # Python virtual environment
+├── react-app/           # React web application (main app)
+│   ├── package.json     # Node.js dependencies
+│   ├── package-lock.json# Node.js lock file
+│   ├── public/          # Static assets
+│   ├── src/             # React source code
+│   │   ├── App.js           # Main React component
+│   │   ├── App.css          # Main CSS
+│   │   ├── index.js         # Entry point
+│   │   ├── index.css        # Global styles
+│   │   ├── components/      # UI components
+│   │   │   ├── FileUpload.js     # File upload component
+│   │   │   ├── FileUpload.css    # File upload styles
+│   │   │   ├── InputMonitor.js   # Input monitoring
+│   │   │   ├── InputMonitor.css  # Input monitor styles
+│   │   │   ├── SearchResults.js  # Results display
+│   │   │   ├── SearchResults.css # Results styles
+│   │   │   └── ...              # Other React files
+│   │   └── ...              # Other React files
+│   └── README.md            # React-specific documentation
 ```
 
 ## Troubleshooting
