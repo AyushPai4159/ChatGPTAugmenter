@@ -80,9 +80,7 @@ def validate_required_files():
         bool: True if all files exist, False otherwise
     """
     required_files = [
-        ("my_model_dir/config.json", "Model directory 'my_model_dir' not found or incomplete!"),
-        ("data/output.json", "Data file 'data/output.json' not found!"),
-        ("data/doc_embeddings.npy", "Embeddings file 'data/doc_embeddings.npy' not found!")
+        ("my_model_dir/config.json", "Model directory 'my_model_dir' not found or incomplete!")
     ]
     
     all_files_exist = True

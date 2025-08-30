@@ -74,9 +74,7 @@ def main():
     # Scripts to run in sequence (equivalent to the bash script)
     scripts = [
         "createVenv.py",
-        "parseJson.py",
         "preload.py", 
-        "createDoc.py",
     ]
     
     # Run each script in sequence
