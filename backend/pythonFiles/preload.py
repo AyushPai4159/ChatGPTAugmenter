@@ -3,8 +3,6 @@ import json
 
 
 
-
-
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')  # or your fine-tuned model
 
 

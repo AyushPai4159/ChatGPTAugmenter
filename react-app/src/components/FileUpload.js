@@ -59,7 +59,7 @@ const FileUpload = ({ userUUID }) => {
       console.log("Sending payload to /extract endpoint...");
       
       // Send to backend
-      const response = await axios.post('http://localhost:5000/extract', payload, {
+      const response = await axios.post('/extract', payload, {
         headers: {
           'Content-Type': 'application/json',
         }

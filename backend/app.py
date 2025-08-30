@@ -194,10 +194,6 @@ def health(uuid):
 
 
 
-@app.route('/')
-def index():
-    """Main page"""
-    return render_template('index.html')
 
 
 
@@ -208,7 +204,7 @@ def load_model_and_data():
     try:
         # Load the sentence transformer model
         model_path = os.path.join(os.path.dirname(__file__), 'my_model_dir')
-        model = SentenceTransformer(model_path)
+        model = SentenceTransformer(model_path).cpu()
         
         print(f"🤖 Model: {model}")
         
@@ -228,5 +224,5 @@ if __name__ == '__main__':
     load_model_and_data()
     
     # Run the Flask app
-    print("🌐 Starting Flask server on http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("🌐 Starting Flask server on http://localhost:8080")
+    app.run(debug=True, host='0.0.0.0', port=8080)
