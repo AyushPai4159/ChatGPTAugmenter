@@ -255,11 +255,6 @@ def health(uuid):
 
 
 
-@app.route('/')
-def index():
-    """Main page"""
-    return render_template('index.html')
-
 
 
 
@@ -276,5 +271,5 @@ if __name__ == '__main__':
     load_model_and_data()
     
     # Run the Flask app
-    print("🌐 Starting Flask server on http://localhost:5001")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    print("🌐 Starting Flask server on http://localhost:8080")
+    app.run(debug=True, host='0.0.0.0', port=8080)
