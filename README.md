@@ -52,7 +52,7 @@ A React web application that provides semantic search capabilities over your Cha
 
 ### Daily Usage
 
-**Option 1: Python Convenience Scripts (Recommended)**
+**Python Convenience Scripts (Recommended)**
 ```bash
 # Start backend server
 python runBackend.py
@@ -61,15 +61,6 @@ python runBackend.py
 python runFrontend.py
 ```
 
-**Option 2: Traditional Method**
-```bash
-# Start backend server
-./run.sh
-
-# In a new terminal, start React app
-cd react-app
-npm start
-```
 
 The backend server will run on `http://localhost:8080` and the React app on `http://localhost:3000`.
 
