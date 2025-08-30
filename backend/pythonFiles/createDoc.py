@@ -12,5 +12,5 @@ keys = list(data.keys())
 
 model = SentenceTransformer('../my_model_dir')
 
-doc_embeddings = model.encode(keys, convert_to_tensor=True)
+doc_embeddings = model.encode(keys, convert_to_tensor=True).cpu()
 np.save("../data/doc_embeddings.npy", doc_embeddings)

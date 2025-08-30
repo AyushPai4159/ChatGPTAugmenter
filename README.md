@@ -1,4 +1,4 @@
-# ChatGPT Augmenter
+# ChatGPT Augmenter - ver0.6
 
 A React web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
@@ -8,6 +8,7 @@ A React web application that provides semantic search capabilities over your Cha
 - **Modern Web Interface**: Clean, responsive React-based user interface
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Fast semantic search with similarity scoring
+- 🆕 **_New to ver0.6_**: **Routes to decouple and simplify app.py**
 
 ## System Requirements
 
@@ -18,7 +19,7 @@ A React web application that provides semantic search capabilities over your Cha
 
 ## Installation & Setup
 
-### First Time Setup
+### Quick Setup (Python Scripts)
 
 1. **Download the Application**
    ```bash
@@ -29,51 +30,55 @@ A React web application that provides semantic search capabilities over your Cha
 2. **Prepare Your Data**
    - Go to ChatGPT and export your data (Settings > Data Export)
    - Extract the `conversations.json` file from your exported data
-   - Copy `conversations.json` to the `/backend/data/` directory
+   - Create an `uploadData` directory in the root: `mkdir uploadData`
+   - Copy `conversations.json` to the `/uploadData/` directory
 
-3. **Run Initial Setup**
+3. **Setup Backend (Python & ML)**
    ```bash
-   ./startup.sh
+   python setupBackend.py
    ```
    This will:
+   - Set up Python virtual environment
    - Install Python dependencies
    - Download and setup the Sentence Transformer model (~80MB)
    - Process your conversations and create embeddings
-   - Start the Flask backend server
 
-4. **Setup React Web Application**
+4. **Setup Frontend (React)**
    ```bash
-   cd react-app
-   npm install
-   npm start
+   python setupFrontend.py
    ```
    This will:
    - Install all Node.js dependencies
-   - Start the React development server
-   - Open the application in your browser at `http://localhost:3000`
+   - Prepare the React development environment
 
 ### Daily Usage
 
-For subsequent runs after the initial setup:
+**Option 1: Python Convenience Scripts (Recommended)**
+```bash
+# Start backend server
+python runBackend.py
 
-1. **Start Backend Server**
-   ```bash
-   ./run.sh
-   ```
+# In a new terminal, start React app
+python runFrontend.py
+```
 
-2. **Start React Application**
-   ```bash
-   cd react-app
-   npm start
-   ```
+**Option 2: Traditional Method**
+```bash
+# Start backend server
+./run.sh
 
-The backend server will run on `http://localhost:5000` and the React app on `http://localhost:3000`.
+# In a new terminal, start React app
+cd react-app
+npm start
+```
+
+The backend server will run on `http://localhost:8080` and the React app on `http://localhost:3000`.
 
 ## How to Use
 
 1. **Start the Application**
-   - Run `./run.sh` to start the backend server
-   - Navigate to the `react-app` directory and run `npm start`
+   - Run `python runBackend.py` to start the backend server
+   - In a new terminal, run `python runFrontend.py` to start the React app
    - The web app will open at `http://localhost:3000`
 
 2. **Search Your Conversations**
@@ -92,32 +97,56 @@ The backend server will run on `http://localhost:5000` and the React app on `htt
 ```
 ChatGPTAugmenter/
 ├── README.md
-├── startup.sh          # First-time setup script
-├── run.sh             # Daily startup script
-├── backend/           # Flask API server
-│   ├── app.py         # Main Flask application
+├── setupBackend.py    # Backend setup script (Python dependencies, ML model)
+├── setupFrontend.py   # Frontend setup script (npm install)
+├── runBackend.py      # Start Flask server from root
+├── runFrontend.py     # Start React app from root
+├── uploadData/        # User data directory
+│   └── conversations.json  # (You need to add this)
+├── startup.sh         # Legacy first-time setup script
+├── run.sh            # Legacy daily startup script
+├── backend/          # Flask API server
+│   ├── app.py        # Main Flask application
 │   ├── requirements.txt
-│   ├── data/          # Your conversation data
-│   │   └── conversations.json  # (You need to add this)
-│   └── pythonFiles/   # Data processing scripts
-├── react-app/         # React web application (main app)
-│   ├── package.json   # Node.js dependencies
-│   ├── public/        # Static assets
-│   ├── src/           # React source code
-│   │   ├── App.js     # Main React component
-│   │   ├── components/ # UI components
-│   │   └── ...        # Other React files
-│   └── README.md      # React-specific documentation
-└── frontend/          # Legacy browser extension (deprecated)
+│   ├── setup.py      # Backend setup automation
+│   ├── run_flask.py  # Flask server runner
+│   ├── data/         # Internal backend data
+│   ├── pythonFiles/  # Data processing scripts
+│   ├── routes/       # API endpoints
+│   └── database/     # Database utilities
+└── react-app/        # React web application
+    ├── package.json  # Node.js dependencies
+    ├── public/       # Static assets
+    ├── src/          # React source code
+    │   ├── App.js    # Main React component
+    │   ├── components/ # UI components
+    │   └── ...       # Other React files
+    └── README.md     # React-specific documentation
 ```
 
 ## Troubleshooting
 
-- **React app not starting**: Make sure Node.js and npm are installed, and run `npm install` in the `react-app` directory
-- **No search results**: Ensure `conversations.json` is in the correct location and `startup.sh` ran successfully
-- **Server errors**: Check that the Flask server is running on `http://localhost:5000`
+- **React app not starting**: Make sure Node.js and npm are installed, and run `python setupFrontend.py`
+- **No search results**: Ensure `conversations.json` is in the `uploadData/` directory and `python setupBackend.py` ran successfully
+- **Server errors**: Check that the Flask server is running on `http://localhost:8080` using `python runBackend.py`
 - **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`
 - **Model download issues**: The setup script will download ~80MB for the Sentence Transformer model
+- **Permission errors**: Make sure you have write permissions in the project directory
+- **Python environment issues**: The setup scripts automatically handle virtual environment creation
+
+## Common Commands
+
+**Setup (First Time)**
+```bash
+python setupBackend.py    # Setup Python backend
+python setupFrontend.py   # Setup React frontend
+```
+
+**Daily Usage**
+```bash
+python runBackend.py      # Start Flask server
+python runFrontend.py     # Start React app (in new terminal)
+```
 
 ## Technical Details
 
@@ -138,4 +167,8 @@ To modify or extend the application:
 
 ## Support
 
-Make sure to run `startup.sh` for first-time setup and `run.sh` for subsequent backend starts. Don't forget to run `npm start` in the `react-app` directory to launch the web application. The Sentence Transformer model requires an internet connection for the initial download.
+**Quick Start**: Run `python setupBackend.py` and `python setupFrontend.py` for first-time setup, then use `python runBackend.py` and `python runFrontend.py` for daily usage.
+
+**Data Location**: Place your `conversations.json` file in the `uploadData/` directory in the root of the project.
+
+**Requirements**: The Sentence Transformer model requires an internet connection for the initial download (~80MB).
