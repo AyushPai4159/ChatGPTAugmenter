@@ -76,7 +76,7 @@ def main():
         ("directory", current_dir / "my_model_dir"),
         ("directory", current_dir / "venv"),
         # Remove output files (equivalent to rm ../data/output.json and rm ../data/doc_embeddings.npy)
-        ("file", current_dir / "data/userData.json")
+        ("directory", current_dir / "data/conversationData")
     ]
     
     success_count = 0
