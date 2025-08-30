@@ -3,7 +3,7 @@ node_modules/
 npm-debug.log*
 
 # Exclude virtual environments and caches (LARGEST SPACE SAVERS)
-venv/
+/backend/venv/
 __pycache__/
 */__pycache__/
 */*/__pycache__/
@@ -16,7 +16,7 @@ env/
 .venv/
 
 # Exclude model directory (will be created during build)
-my_model_dir/
+/backend/my_model_dir/
 
 # Exclude test files and documentation (MEDIUM SPACE SAVERS)
 tests/

@@ -12,12 +12,7 @@ ENV FLASK_ENV=production
 ENV FLASK_APP=app.py
 ENV PYTHONPATH=/app
 
-# Database environment variables (can be overridden at runtime)
-ENV DB_HOST=host.docker.internal
-ENV DB_PORT=5432
-ENV DB_NAME=test
-ENV DB_USER=ayushpai
-ENV DB_PASSWORD=pai2004
+
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -35,11 +30,11 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY requirements.txt ./
+COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all application contents (excluding venv and __pycache__ via .dockerignore)
-COPY . ./
+# Copy backend application contents (excluding venv and __pycache__ via .dockerignore)
+COPY backend/ ./
 
 # Remove any accidentally copied venv and __pycache__ directories
 RUN find /app -type d -name "venv" -exec rm -rf {} + 2>/dev/null || true \
