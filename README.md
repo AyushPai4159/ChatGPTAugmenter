@@ -8,7 +8,7 @@ A React web application that provides semantic search capabilities over your Cha
 - **Modern Web Interface**: Clean, responsive React-based user interface
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Fast semantic search with similarity scoring
-- 🆕 **_New to ver0.7_**: **Direct file upload - no manual data preparation needed**
+- 🆕 **_New to ver0.6_**: **Direct file upload - no manual data preparation needed**
 
 ## System Requirements
 
@@ -30,7 +30,7 @@ A React web application that provides semantic search capabilities over your Cha
 2. **Prepare Your Data**
    - Go to ChatGPT and export your data (Settings > Data Export)
    - Extract the `conversations.json` file from your exported data
-   - 🆕 **New in ver0.7**: You can upload this file directly through the web interface
+   - 🆕 **New in ver0.6**: You can upload this file directly through the web interface
 
 3. **Setup Backend (Python & ML)**
    ```bash
