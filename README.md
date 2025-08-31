@@ -1,4 +1,4 @@
-# ChatGPT Augmenter
+# ChatGPT Augmenter ver0.2
 
 A React web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
