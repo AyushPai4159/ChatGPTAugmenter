@@ -12,7 +12,7 @@ A React web application that provides semantic search capabilities over your Cha
 
 ## System Requirements
 
-- Python 3.7 or higher
+- Python 3.11 or higher
 - Node.js and npm (required for React app)
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - ~80MB of SSD space for the Sentence Transformer model
