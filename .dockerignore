@@ -1,0 +1,94 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Exclude virtual environments and caches (LARGEST SPACE SAVERS)
+/backend/venv/
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+env/
+.venv/
+
+# Exclude model directory (will be created during build)
+/backend/my_model_dir/
+
+# Exclude test files and documentation (MEDIUM SPACE SAVERS)
+tests/
+README_FLASK.md
+INSTALLATION_GUIDE.md
+*.md
+
+# Exclude shell scripts and setup files
+bashFiles/
+setup.sh
+run*.sh
+
+# Exclude data files (will be mounted as volumes)
+data/conversations/*
+
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build outputs
+react-app/build/
+react-app/dist/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

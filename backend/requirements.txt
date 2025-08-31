@@ -1,0 +1,9 @@
+Flask
+Flask-CORS
+sentence-transformers
+numpy
+torch
+transformers
+psycopg[binary]
+python-dotenv
+gunicorn
