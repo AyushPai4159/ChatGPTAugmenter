@@ -1,4 +1,4 @@
-# ChatGPT Augmenter - ver0.6
+# ChatGPT Augmenter - ver0.4
 
 A React web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
@@ -8,7 +8,7 @@ A React web application that provides semantic search capabilities over your Cha
 - **Modern Web Interface**: Clean, responsive React-based user interface
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Fast semantic search with similarity scoring
-- 🆕 **_New to ver0.6_**: **Routes to decouple and simplify app.py**
+- 🆕 **_New to ver0.4_**: **Routes to decouple and simplify app.py**
 
 ## System Requirements
 
