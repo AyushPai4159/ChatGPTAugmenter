@@ -14,7 +14,7 @@ There are 6 core branches/versions for this project: ver0.0, ver0.2, ver0.4, ver
 
 - **ver0.0**: The root node of the project (also known as master).
 - **ver0.2**: Introduced react frontend and backend, but exported data was manually uploaded in local filesytem.
-- **ver0.4**: same as ver0.2 on the surface, but vastly cleaner documentation, decoupling, and formatting of code.
+- **ver0.4**: Same as ver0.2 on the surface, but vastly cleaner documentation, decoupling, and formatting of code.
 - **ver0.6**: Introduced uploading data on the frontend interface.
 - **ver0.8**: Introduced database integration, delete data feature, and multi-user interactibility.
 - **ver1.0**: React frontend built as static files for cleaner packaging and dockerfile for deployement.
