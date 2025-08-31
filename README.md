@@ -18,7 +18,7 @@ A web application that provides semantic search capabilities over your ChatGPT c
 
 ## System Requirements
 
-- Python 3.7 or higher
+- Python 3.11 or higher
 - Node.js and npm (required for React app)
 - PostgreSQL 12+ (recommended) or fallback to JSON file storage
 - Modern web browser (Chrome, Firefox, Safari, Edge)
