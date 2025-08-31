@@ -64,17 +64,6 @@ A web application that provides semantic search capabilities over your ChatGPT c
 
 3. **Environment Configuration**
 
-    **Frontend Environment Setup:**
-    - Go to the `react-app` directory:
-       ```bash
-       cd react-app
-       ```
-    - Create or edit the `.env` file with the correct backend URL:
-       ```properties
-       # react-app/.env
-       REACT_APP_API_BASE_URL=http://localhost:8080
-       ```
-
     **Backend Database Configuration (Again optional depending if you want to use a database):**
     - Go to the backend database directory:
        ```bash
@@ -104,43 +93,27 @@ A web application that provides semantic search capabilities over your ChatGPT c
    - Extract the `conversations.json` file from your exported data
    - You can now upload `conversations.json` directly through the web interface
 
-5. **Run Initial Backend Setup**
+5. **Run Initial App Setup**
    ```bash
-   python setupBackend.py
+   python setupApp.py
    ```
    This will:
    - Install Python dependencies (including PostgreSQL drivers)
    - Download and setup the Sentence Transformer model (~80MB)
    - Process your conversations and create embeddings
 
-6. **Setup React Web Application**
-   ```bash
-   python setupFrontend.py
-   ```
-   This will:
-   - Install all Node.js dependencies
-   - Prepare the React development environment
-   - You can then run the React app with:
-     ```bash
-     python runFrontend.py
-     ```
-   - The application will open in your browser at `http://localhost:3000`
 
 ### Daily Usage
 
 For subsequent runs after the initial setup:
 
-1. **Start Backend Server**
+**Start Backend Server**
    ```bash
-   python runBackend.py
+   python runApp.py
    ```
 
-2. **Start React Application**
-   ```bash
-   python runFrontend.py
-   ```
 
-The backend server will run on `http://localhost:8080` and the React app on `http://localhost:3000`.
+The app server will run on `http://localhost:8080` 
 
 ### Docker Deployment (Alternative Setup)
 
@@ -176,9 +149,7 @@ docker run -p 8080:8080 -v $(pwd)/data:/app/backend/data chatgpt-augmenter
 
 
 1. **Start the Application**
-   - Run `python runBackend.py` to start the backend server
-   - Run `python runFrontend.py` to start the React app
-   - The web app will open at `http://localhost:3000`
+   - Run `python runApp.py` to start the backend server
 
 2. **Upload and Manage Your Data**
    - Use the file upload interface to add your `conversations.json` file
@@ -254,9 +225,7 @@ ChatGPTAugmenter/
 ## Troubleshooting
 
 - **React app not starting**: Make sure Node.js and npm are installed, and run `npm install` in the `react-app` directory
-- **No search results**: Ensure `conversations.json` is in the correct location and `startup.sh` ran successfully
 - **Server errors**: Check that the Flask server is running on `http://localhost:8080`
-- **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`
 - **Model download issues**: The setup script will download ~80MB for the Sentence Transformer model
 - **Database connection issues**: 
   - **macOS**: Check PostgreSQL service: `brew services list | grep postgresql`
@@ -267,9 +236,6 @@ ChatGPTAugmenter/
   - **Windows**: Use pgAdmin or Command Prompt: `psql -U postgres -l`
   - **Environment Configuration**: Ensure `backend/database/.env` has correct credentials
   - **Connection Test**: Check that database name matches between `.env` and actual database
-- **Frontend connection issues**: 
-  - Verify `react-app/.env` has correct `REACT_APP_API_BASE_URL=http://localhost:8080`
-  - Ensure backend is running on the same port specified in the React environment file
 - **Environment file missing**: Copy `backend/database/.env.example` to `backend/database/.env` and configure
 - **Delete functionality not working**: Ensure proper database permissions and check server logs
 - **Storage fallback**: If seeing "JSON fallback" messages, PostgreSQL connection failed but app continues with file storage
@@ -278,7 +244,7 @@ ChatGPTAugmenter/
 
 - **Backend**: Flask with sentence-transformers for semantic search
 - **Database**: PostgreSQL for production with automatic JSON file fallback
-- **Frontend**: React web application with modern UI components and enhanced UX
+- **Frontend**: Static JS built from React.JS framwork
 - **ML Model**: Uses sentence-transformers for creating and comparing text embeddings
 - **Storage**: 
   - **Primary**: PostgreSQL with indexed embeddings for fast similarity search
