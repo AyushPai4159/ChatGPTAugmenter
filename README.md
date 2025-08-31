@@ -1,8 +1,8 @@
-# ChatGPT Augmenter - Developer App 0.9
+# ChatGPT Augmenter ver 1.0
 
 A web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
-## Version 0.9 Features
+## Version 1.0 Features
 
 **Core Features:**
 - **Semantic Search**: Search through your ChatGPT conversations using advanced sentence transformers
@@ -10,7 +10,7 @@ A web application that provides semantic search capabilities over your ChatGPT c
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Intuitive semantic search with similarity scoring
 
-**🆕 New in Version 0.9:**
+**🆕 New in Version 1.0:**
 - **� Enhanced Docker Support**: New optimized Dockerfile with multi-stage builds and CPU-only PyTorch
 - **� Static File Integration**: React frontend compiled into static files served directly by Flask
 - **� Simplified Deployment**: Single-container deployment with integrated frontend and backend
@@ -221,7 +221,7 @@ ChatGPTAugmenter/
 │   ├── run_flask.py     # Direct Flask server runner
 │   ├── load.py          # Data loading utilities
 │   ├── delete.py        # Data deletion utilities
-│   ├── static/          # Compiled React frontend (ver0.9 feature)
+│   ├── static/          # Compiled React frontend (ver1.0 feature)
 │   │   ├── css/         # Compiled CSS files
 │   │   └── js/          # Compiled JavaScript files
 │   ├── templates/       # Flask HTML templates
@@ -295,11 +295,11 @@ ChatGPTAugmenter/
 
 Make sure to run `python setupApp.py` for first-time setup and `python runApp.py` for subsequent starts. The application serves both frontend and backend on `http://localhost:8080`. The Sentence Transformer model requires an internet connection for the initial download.
 
-### Version 0.9 Notes
+### Version 1.0 Notes
 - **Single-port deployment** simplifies access and configuration
 - **Docker-first approach** for easy deployment and scaling
 - **Static file serving** eliminates need for separate React development server
 - **Unified setup scripts** reduce complexity and potential configuration issues
 - **Production optimization** with efficient container builds and resource usage
 
-For issues specific to v0.9 features, ensure Docker is properly installed for containerized deployment, or use the Python scripts for local development. The integrated static files mean you only need to access `http://localhost:8080` for the complete application.
+For issues specific to v1.0 features, ensure Docker is properly installed for containerized deployment, or use the Python scripts for local development. The integrated static files mean you only need to access `http://localhost:8080` for the complete application.
