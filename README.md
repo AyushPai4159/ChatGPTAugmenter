@@ -1,8 +1,8 @@
-# ChatGPT Augmenter - Developer App 0.8
+# ChatGPT Augmenter - Developer App 0.9
 
 A web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
-## Version 0.8 Features
+## Version 0.9 Features
 
 **Core Features:**
 - **Semantic Search**: Search through your ChatGPT conversations using advanced sentence transformers
@@ -10,16 +10,16 @@ A web application that provides semantic search capabilities over your ChatGPT c
 - **Smart Recommendations**: Get relevant conversation snippets based on your search queries
 - **Real-time Results**: Intuitive semantic search with similarity scoring
 
-**🆕 New in Version 0.8:**
-- **🗑️ Delete Functionality**: Delete button to remove uploaded data after processing
-- **🗄️ PostgreSQL Integration**: Robust database storage with automatic JSON file fallback
-- **🔄 Hybrid Storage**: Seamless switching between PostgreSQL and JSON storage based on availability
-- **📊 Enhanced Data Management**: Improved upload, processing, and deletion capabilities
+**🆕 New in Version 0.9:**
+- **� Enhanced Docker Support**: New optimized Dockerfile with multi-stage builds and CPU-only PyTorch
+- **� Static File Integration**: React frontend compiled into static files served directly by Flask
+- **� Simplified Deployment**: Single-container deployment with integrated frontend and backend
+- **⚡ Streamlined Setup**: Unified `setupApp.py` and `runApp.py` scripts for simplified management
+- **🔧 Production Ready**: Optimized Docker container under 2GB for efficient deployment
 
 ## System Requirements
 
-- Python 3.7 or higher
-- Node.js and npm (required for React app)
+- Python 3.11 or higher
 - PostgreSQL 12+ (recommended) or fallback to JSON file storage
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - ~80MB of SSD space for the Sentence Transformer model
@@ -142,6 +142,36 @@ For subsequent runs after the initial setup:
 
 The backend server will run on `http://localhost:8080` and the React app on `http://localhost:3000`.
 
+### Docker Deployment (Alternative Setup)
+
+For containerized deployment, you can use the provided Dockerfile:
+
+1. **Build the Docker Image**
+   ```bash
+   docker build -t chatgpt-augmenter .
+   ```
+
+2. **Run the Container**
+   ```bash
+   docker run -p 8080:8080 chatgpt-augmenter
+   ```
+
+3. **Access the Application**
+   - The application will be available at `http://localhost:8080`
+   - Upload your `conversations.json` file through the web interface
+   - The container includes all dependencies and the ML model
+
+**Docker Features:**
+- **Optimized size**: Multi-stage build with CPU-only PyTorch (~2GB total)
+- **All-in-one**: Includes backend, frontend, and all dependencies
+- **Persistent data**: Use volumes to persist uploaded data and embeddings
+- **Production ready**: Configured for deployment environments
+
+**Volume mounting for persistent data:**
+```bash
+docker run -p 8080:8080 -v $(pwd)/data:/app/backend/data chatgpt-augmenter
+```
+
 ## How to Use
 
 
@@ -178,33 +208,47 @@ The backend server will run on `http://localhost:8080` and the React app on `htt
 ```
 ChatGPTAugmenter/
 ├── README.md
-├── setupBackend.py      # Backend setup script (Python dependencies, ML model)
-├── setupFrontend.py     # Frontend setup script (npm install)
-├── runBackend.py        # Start Flask server from root
-├── runFrontend.py       # Start React app from root
-├── Dockerfile           # Dockerfile for deployment
-├── backend/             # Flask API server
-│   ├── app.py           # Main Flask application
-│   ├── requirements.txt # Python dependencies (includes psycopg2)
+├── setupApp.py          # Unified setup script (replaces setupBackend.py/setupFrontend.py)
+├── runApp.py            # Unified run script (replaces runBackend.py/runFrontend.py)
+├── Dockerfile           # Optimized multi-stage Docker build
+├── .dockerignore        # Docker build exclusions
+├── .gitignore          # Git exclusions
+├── backend/             # Flask API server with integrated static files
+│   ├── __init__.py      # Python package initialization
+│   ├── app.py           # Main Flask application with static file serving
+│   ├── requirements.txt # Python dependencies
+│   ├── setup.py         # Backend-specific setup utilities
+│   ├── run_flask.py     # Direct Flask server runner
+│   ├── load.py          # Data loading utilities
+│   ├── delete.py        # Data deletion utilities
+│   ├── static/          # Compiled React frontend (ver0.9 feature)
+│   │   ├── css/         # Compiled CSS files
+│   │   └── js/          # Compiled JavaScript files
+│   ├── templates/       # Flask HTML templates
+│   │   └── index.html   # Main application template
+│   ├── data/            # Application data storage
+│   │   └── dummy.txt    # Placeholder file
 │   ├── database/        # Database configuration and models
-│   │   ├── postgres.py      # PostgreSQL connection and operations
-│   │   ├── .env             # Database credentials (create from .env.example)
-│   │   └── .env.example     # Template for database configuration
-│   ├── data/            # Internal backend data
-│   ├── pythonFiles/     # Data processing scripts
+│   │   ├── __init__.py  # Database package initialization
+│   │   └── postgres.py  # PostgreSQL connection and operations
+│   ├── pythonFiles/     # Core utility scripts
 │   │   ├── createVenv.py    # Virtual environment creation
-│   │   └── preload.py       # Model initialization
-│   ├── routes/          # API endpoints
-│   │   ├── extract.py       # Data extraction with delete functionality
+│   │   └── preload.py       # Model initialization and preloading
+│   ├── routes/          # API endpoints (modular route structure)
+│   │   ├── __init__.py      # Routes package initialization
+│   │   ├── extract.py       # Data extraction endpoints
 │   │   ├── search.py        # Semantic search operations
 │   │   ├── health.py        # Health check endpoint
-│   │   └── delete.py        # Data deletion endpoint
-│   ├── tests/           # Backend unit tests
-│   │   ├── test_delete.py   # Test for delete functionality
-│   │   ├── test_extract.py  # Test for extract functionality
-│   │   ├── test_postgres.py # Test for PostgreSQL integration
-│   │   └── test_search.py   # Test for search functionality
-│   
+│   │   └── delete.py        # Data deletion endpoints
+│   └── tests/           # Backend unit tests
+│       ├── __init__.py      # Test package initialization
+│       ├── conftest.py      # Test configuration
+│       ├── README.md        # Test documentation
+│       ├── requirements-test.txt # Test dependencies
+│       ├── test_extract.py  # Extract functionality tests
+│       ├── test_search.py   # Search functionality tests
+│       ├── test_delete.py   # Delete functionality tests
+│       └── test_postgres.py # Database integration tests
 ```
 
 ## Troubleshooting
@@ -244,36 +288,18 @@ ChatGPTAugmenter/
 - **Data Management**: Upload, process, search, and delete operations with real-time feedback
 - **Performance**: Optimized for large conversation datasets with efficient similarity queries
 
-## Version 0.8 New Features
 
-### 🗑️ Delete Functionality
-- **One-click deletion**: Remove uploaded conversation data with a single button click
-- **Complete cleanup**: Removes both raw data and processed embeddings
-- **Confirmation dialogs**: Prevents accidental data loss
-- **Real-time feedback**: Progress indicators during deletion process
-
-### 🗄️ Database Integration
-- **PostgreSQL primary storage**: Fast, reliable database for conversation embeddings
-- **Automatic fallback**: Seamless switch to JSON files if database is unavailable
-- **Connection resilience**: Handles database disconnections gracefully
-- **Migration support**: Easy transition from JSON to PostgreSQL storage
-
-### 📊 Enhanced Data Management
-- **Upload progress tracking**: Real-time feedback during file processing
-- **Storage method display**: Shows whether using PostgreSQL or JSON fallback
-- **Error handling**: Comprehensive error messages and recovery suggestions
-- **Performance monitoring**: Query timing and optimization metrics
 
 
 ## Support
 
-Make sure to run `startup.sh` for first-time setup and `run.sh` for subsequent backend starts. Don't forget to run `npm start` in the `react-app` directory to launch the web application. The Sentence Transformer model requires an internet connection for the initial download.
+Make sure to run `python setupApp.py` for first-time setup and `python runApp.py` for subsequent starts. The application serves both frontend and backend on `http://localhost:8080`. The Sentence Transformer model requires an internet connection for the initial download.
 
-### Version 0.8 Notes
-- **PostgreSQL recommended** for better performance with large datasets
-- **JSON fallback ensures functionality** even without database setup
-- **Delete feature requires confirmation** to prevent accidental data loss
-- **Hybrid storage system** provides maximum reliability and flexibility
-- **Enhanced error handling** provides better user feedback and troubleshooting guidance
+### Version 0.9 Notes
+- **Single-port deployment** simplifies access and configuration
+- **Docker-first approach** for easy deployment and scaling
+- **Static file serving** eliminates need for separate React development server
+- **Unified setup scripts** reduce complexity and potential configuration issues
+- **Production optimization** with efficient container builds and resource usage
 
-For issues specific to v0.8 features, check the database connection status and ensure proper file permissions for both PostgreSQL and JSON fallback storage.
+For issues specific to v0.9 features, ensure Docker is properly installed for containerized deployment, or use the Python scripts for local development. The integrated static files mean you only need to access `http://localhost:8080` for the complete application.
