@@ -14,13 +14,15 @@ ENV PYTHONPATH=/app
 
 
 
-# Install system dependencies
+# Install system dependencies including cron and sudo
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libpq-dev \
     curl \
     ca-certificates \
+    cron \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -61,6 +63,31 @@ RUN echo 'bind = "0.0.0.0:8080"' > /app/gunicorn.conf.py \
     && echo 'accesslog = "-"' >> /app/gunicorn.conf.py \
     && echo 'errorlog = "-"' >> /app/gunicorn.conf.py
 
+# Setup crontab for daily data cleanup at 5 AM EST (10 AM UTC)
+RUN echo '# Daily data cleanup at 5 AM EST (10 AM UTC)' > /app/cleanup-crontab \
+    && echo '0 10 * * * find /app/data -type f -not -name "dummy.txt" -delete 2>/dev/null' >> /app/cleanup-crontab \
+    && echo '# Log cleanup completion' >> /app/cleanup-crontab \
+    && echo '1 10 * * * echo "$(date): Data cleanup completed" >> /app/cleanup.log' >> /app/cleanup-crontab \
+    && chmod 644 /app/cleanup-crontab
+
+# Create startup script that runs both cron and gunicorn
+RUN echo '#!/bin/bash' > /app/start.sh \
+    && echo 'set -e' >> /app/start.sh \
+    && echo '' >> /app/start.sh \
+    && echo '# Install crontab as root' >> /app/start.sh \
+    && echo 'sudo crontab /app/cleanup-crontab' >> /app/start.sh \
+    && echo '' >> /app/start.sh \
+    && echo '# Start cron daemon as root' >> /app/start.sh \
+    && echo 'sudo service cron start' >> /app/start.sh \
+    && echo '' >> /app/start.sh \
+    && echo '# Start gunicorn as appuser' >> /app/start.sh \
+    && echo 'exec gunicorn --config gunicorn.conf.py app:app' >> /app/start.sh \
+    && chmod +x /app/start.sh
+
+# Give appuser sudo access for cron management (needed for container startup)
+RUN echo 'appuser ALL=(ALL) NOPASSWD: /usr/sbin/service cron start, /usr/bin/crontab' > /etc/sudoers.d/appuser \
+    && chmod 440 /etc/sudoers.d/appuser
+
 # Switch to non-root user
 USER appuser
 
@@ -71,5 +98,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# Start the application
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "app:app"]
+# Start the application with cron and gunicorn
+CMD ["/app/start.sh"]
