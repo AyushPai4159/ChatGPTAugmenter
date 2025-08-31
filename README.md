@@ -12,12 +12,12 @@ Hi my name is Ayush Pai, a senior at UNC Chapel Hill. I love being efficiently l
 
 There are 6 core branches/versions for this project: ver0.0, ver0.2, ver0.4, ver0.6, ver0.8, and ver1.0. The other branches are there for convinience for myself if I want to create another version for this project. Here is a brief overview on the surface level of what these versions accomplish.
 
-- **ver0.0**: The root node of the project (also known as master).
-- **ver0.2**: Introduced react frontend and backend, but exported data was manually uploaded in local filesytem.
-- **ver0.4**: Same as ver0.2 on the surface, but vastly cleaner documentation, decoupling, and formatting of code.
-- **ver0.6**: Introduced uploading data on the frontend interface.
-- **ver0.8**: Introduced database integration, delete data feature, and multi-user interactibility.
-- **ver1.0**: React frontend built as static files for cleaner packaging and dockerfile for deployement.
+- **ver0.0**: The root node of the project (also known as master)
+- **ver0.2**: Introduced react frontend and backend, but exported data was manually uploaded in local filesytem
+- **ver0.4**: Same as ver0.2 on the surface, but vastly cleaner documentation, decoupling, and formatting of code
+- **ver0.6**: Introduced uploading data on the frontend interface
+- **ver0.8**: Introduced database integration, delete data feature, and multi-user interactibility
+- **ver1.0**: React frontend built as static files for cleaner packaging and dockerfile for deployement
 
 
 ## Version 1.0 Features
