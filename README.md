@@ -255,25 +255,7 @@ ChatGPTAugmenter/
 - **Data Management**: Upload, process, search, and delete operations with real-time feedback
 - **Performance**: Optimized for large conversation datasets with efficient similarity queries
 
-## Version 0.8 New Features
 
-### 🗑️ Delete Functionality
-- **One-click deletion**: Remove uploaded conversation data with a single button click
-- **Complete cleanup**: Removes both raw data and processed embeddings
-- **Confirmation dialogs**: Prevents accidental data loss
-- **Real-time feedback**: Progress indicators during deletion process
-
-### 🗄️ Database Integration
-- **PostgreSQL primary storage**: Fast, reliable database for conversation embeddings
-- **Automatic fallback**: Seamless switch to JSON files if database is unavailable
-- **Connection resilience**: Handles database disconnections gracefully
-- **Migration support**: Easy transition from JSON to PostgreSQL storage
-
-### 📊 Enhanced Data Management
-- **Upload progress tracking**: Real-time feedback during file processing
-- **Storage method display**: Shows whether using PostgreSQL or JSON fallback
-- **Error handling**: Comprehensive error messages and recovery suggestions
-- **Performance monitoring**: Query timing and optimization metrics
 
 ## Development
 
