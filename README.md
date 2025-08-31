@@ -1,6 +1,24 @@
-# ChatGPT Augmenter ver 1.0
+# ChatGPT Augmenter ver 1.0 RELEASE
 
 A web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
+
+
+## CONTEXT
+
+Hi my name is Ayush Pai, a senior at UNC Chapel Hill. I love being efficiently lazy and self-sufficient when if comes to work, because it gives me more leisure time to speedrun Minecraft (actually jk for that because my ability to use hot keys is slow as molasses). I actually really like ChatGPT but sometimes I feel like I always rely on it. I feel like many of the answers to my questions are which I may have asked similarily in the past. That is what this app is for! It allows you to take your ChatGPT history (which you can export as a json on the official website) and use it to be a basis in which you can ask similar questions to which the application will provide ChatGPT assistant answers to historical similar questions which match your query. Hope you enjoy!
+
+
+## Progression of this Project
+
+There are 6 core branches/versions for this project: ver0.0, ver0.2, ver0.4, ver0.6, ver0.8, and ver1.0. The other branches are there for convinience for myself if I want to create another version for this project. Here is a brief overview on the surface level of what these versions accomplish.
+
+- **ver0.0**: The root node of the project (also known as master).
+- **ver0.2**: Introduced react frontend and backend, but exported data was manually uploaded in local filesytem.
+- **ver0.4**: same as ver0.2 on the surface, but vastly cleaner documentation, decoupling, and formatting of code.
+- **ver0.6**: Introduced uploading data on the frontend interface.
+- **ver0.8**: Introduced database integration, delete data feature, and multi-user interactibility.
+- **ver1.0**: React frontend built as static files for cleaner packaging and dockerfile for deployement.
+
 
 ## Version 1.0 Features
 
