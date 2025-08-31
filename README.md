@@ -221,7 +221,6 @@ ChatGPTAugmenter/
 ## Troubleshooting
 
 - **React app not starting**: Make sure Node.js and npm are installed, and run `npm install` in the `react-app` directory
-- **No search results**: Ensure `conversations.json` is in the correct location and `startup.sh` ran successfully
 - **Server errors**: Check that the Flask server is running on `http://localhost:8080`
 - **CORS issues**: The backend is configured to allow requests from `http://localhost:3000`
 - **Model download issues**: The setup script will download ~80MB for the Sentence Transformer model
