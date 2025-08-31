@@ -1,4 +1,4 @@
-# ChatGPT Augmenter - Developer App 0.8
+# ChatGPT Augmenter ver0.8
 
 A web application that provides semantic search capabilities over your ChatGPT conversation history using machine learning embeddings.
 
